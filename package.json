@@ -1,0 +1,30 @@
+{
+  "name": "hey-validator",
+  "version": "0.0.1",
+  "description": "javascript validator",
+  "main": "build/manba.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heyui/hey-validator.git"
+  },
+  "keywords": [
+    "validator",
+    "js",
+    "data valid"
+  ],
+  "author": {
+    "name": "alias"
+  },
+  "license": "The MIT License",
+  "dependencies": {
+    "hey-utils": "0.0.15"
+  },
+  "bugs": {
+    "url": "https://github.com/heyui/hey-validator/issues"
+  },
+  "scripts": {
+    "test": "mocha --compilers js:babel-core/register ./test/*.js"
+  },
+  "homepage": "https://github.com/heyui/hey-validator#readme",
+  "readmeFilename": "README.md"
+}
