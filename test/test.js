@@ -1,82 +1,273 @@
 var validator = require('../src/index');
+var baseValids = require('../src/validation/baseValids');
+var typeValids = require('../src/validation/typeValids');
 var expect = require('chai').expect;
-(function () {
-  'use strict';
+'use strict';
 
-  describe('不同数据要求验证', function () {
-    new Valid({
-      rules: {
-        a: {
-          valid: 'int|number|email|url|tel|mobile|globalmobile', //可以自定义
-          required: true,
-          maxlen: 1000,
-          minlen: 2
-        },
-        b: {
-          valid: {
-            pattern: /^[0-9]+$/,
-            message: "请输入正确的数字格式"
-          },
-          required: true,
-          min: 1,
-          max: 5
-        },
-        c: {
-          required: true,
-          valid: ['int', (prop, parent, data) {
-            if (resp.isExsit) {
-              return "错误";
-            }
-            return true;
-          }],
-          validAsync(prop, parent, next, data) {
-            $.ajax('/test').then((resp)) {
-              if (resp.isExsit) {
-                next("已存在");
-              }
-              next();
-            }
-          }
-        },
-        "d.b": {
-
-        },
-        "e[].a": {
-
-        }
-      },
-      combineRules: [{
-        parentRef: 'a[]',
-        refs: ['b', 'c'],
-        valid() {
-          if (condition) {
-            return new Error("a不能大于b");
-          }
-          return true;
-        }
-      }, {
-        refs: ['b', 'c'],
-        valid: 'lessThan', //greaterThan
-        message: "开始时间必须小于结束时间"
-      }, {
-        refs: ['d', 'e'],
-        valid: 'equal',
-        message: "两次密码输入必须一致"
-      }],
-      required: ['b', 'c', 'e', 'f', 'e', "d.b", "e[].a"],
-      int: ['a'],
-      number: ['a'],
-      email: ['a'],
-      url: ['a'],
-      tel: ['a'],
-      mobile: ['a'],
-      globalmobile: ['a'] //国际号码
-    });
-
-    it('validator非空', function () {
-      let d = new manba();
-      expect(validator({ required: ['a'] }).valid({ a: '' })).to.equal(false);
-    });
+let v = new validator({
+  rules: {
+    a: {
+      required: true
+    },
+    a1: {
+      required: true
+    },
+    b1: {
+      type: "int"
+    }
+  },
+  required: ['b'],
+  int: ["a1"]
+});
+let data = { a: 'a', b: '', a1: '', b1: 'a' };
+let requireError = { valid: false, message: baseValids.required.message };
+let success = { valid: true, message: null };
+describe('非空验证', function () {
+  it('validator非空: 空值', function () {
+    expect(v.validField('a', { a: 'a' })).to.deep.equal({ a: success });
   });
 
-}());
+  it('validator非空: 非空值', function () {
+    expect(v.validField('b', { b: '' })).to.deep.equal({ b: requireError });
+  });
+});
+describe('类型验证:int', function () {
+  it('validator基础int验证: 非必填有验证', function () {
+    expect(v.validField('b1', { b1: '' })).to.deep.equal({ b1: success });
+  });
+
+  it('validator基础int验证: 整数值', function () {
+    expect(v.validField('a1', { a1: '1' })).to.deep.equal({ a1: success });
+  });
+
+  it('validator基础int验证: float', function () {
+    expect(v.validField('b1', { b1: '2.4' })).to.deep.equal({ b1: { valid: false, message: typeValids.int.message } });
+  });
+
+  it('validator基础int验证: string', function () {
+    expect(v.validField('b1', { b1: 'a' })).to.deep.equal({ b1: { valid: false, message: typeValids.int.message } });
+  });
+
+  it('validator基础int验证: negative', function () {
+    expect(v.validField('b1', { b1: '-13' })).to.deep.equal({ b1: success });
+  });
+
+  it('validator基础number验证: 整数值', function () {
+    expect(v.validField('a1', { a1: '1' })).to.deep.equal({ a1: success });
+  });
+
+});
+
+let numValid = new validator({
+  rules: {
+    b: {
+      required: true
+    }
+  },
+  number: ['b']
+});
+
+describe('类型验证:number', function () {
+  it('number定义初始化', function () {
+    expect(numValid.getConfig("b").type).to.equal("number");
+  });
+
+  it('validator基础number验证: string', function () {
+    expect(numValid.validField('b', { b: 'a' })).to.deep.equal({ b: { valid: false, message: typeValids.number.message } });
+  });
+
+  it('validator基础number验证: date', function () {
+    expect(numValid.validField('b', { b: new Date() })).to.deep.equal({ b: success });
+  });
+
+  it('validator基础number验证: number', function () {
+    expect(numValid.validField('b', { b: '1.3' })).to.deep.equal({ b: success });
+  });
+
+  it('validator基础number验证: int', function () {
+    expect(numValid.validField('b', { b: '12' })).to.deep.equal({ b: success });
+  });
+
+});
+
+
+
+let emailValid = new validator({
+  rules: {
+    b: {
+      required: true
+    }
+  },
+  email: ['b']
+});
+
+var emailError = { valid: false, message: typeValids.email.message };
+
+describe('类型验证:email', function () {
+  it('email定义初始化', function () {
+    expect(emailValid.getConfig("b").type).to.equal("email");
+  });
+
+  it('validator基础email验证: string', function () {
+    expect(emailValid.validField('b', { b: 'a' })).to.deep.equal({ b: emailError });
+  });
+
+  it('validator基础email验证: date', function () {
+    expect(emailValid.validField('b', { b: new Date() })).to.deep.equal({ b: emailError });
+  });
+
+  it('validator基础email验证: number', function () {
+    expect(emailValid.validField('b', { b: '1.3' })).to.deep.equal({ b: emailError });
+  });
+
+  it('validator基础email验证: email', function () {
+    expect(emailValid.validField('b', { b: 'a@sina.com' })).to.deep.equal({ b: success });
+  });
+
+});
+
+
+
+let urlValid = new validator({
+  rules: {
+    b: {
+      required: true
+    }
+  },
+  url: ['b']
+});
+
+var urlError = { valid: false, message: typeValids.url.message };
+
+describe('类型验证:url', function () {
+  it('url定义初始化', function () {
+    expect(urlValid.getConfig("b").type).to.equal("url");
+  });
+
+  it('validator基础url验证: string', function () {
+    expect(urlValid.validField('b', { b: 'a' })).to.deep.equal({ b: urlError });
+  });
+
+  it('validator基础url验证: date', function () {
+    expect(urlValid.validField('b', { b: new Date() })).to.deep.equal({ b: urlError });
+  });
+
+  it('validator基础url验证: number', function () {
+    expect(urlValid.validField('b', { b: '1.3' })).to.deep.equal({ b: urlError });
+  });
+
+  it('validator基础url验证: www.baidu.com', function () {
+    expect(urlValid.validField('b', { b: 'www.baidu.com' })).to.deep.equal({ b: success });
+  });
+
+  it('validator基础url验证: http://www.baidu.com', function () {
+    expect(urlValid.validField('b', { b: 'http://www.baidu.com' })).to.deep.equal({ b: success });
+  });
+
+  it('validator基础url验证: https://www.baidu.com', function () {
+    expect(urlValid.validField('b', { b: 'https://www.baidu.com' })).to.deep.equal({ b: success });
+  });
+
+})
+
+
+let telValid = new validator({
+  rules: {
+    b: {
+      required: true
+    }
+  },
+  tel: ['b']
+});
+
+var telError = { valid: false, message: typeValids.tel.message };
+
+describe('类型验证:tel', function () {
+  it('tel定义初始化', function () {
+    expect(telValid.getConfig("b").type).to.equal("tel");
+  });
+
+  it('validator基础tel验证: string', function () {
+    expect(telValid.validField('b', { b: 'a' })).to.deep.equal({ b: telError });
+  });
+
+  it('validator基础tel验证: date', function () {
+    expect(telValid.validField('b', { b: new Date() })).to.deep.equal({ b: telError });
+  });
+
+  it('validator基础tel验证: number', function () {
+    expect(telValid.validField('b', { b: '1.3' })).to.deep.equal({ b: telError });
+  });
+
+  it('validator基础tel验证: 05568981829', function () {
+    expect(telValid.validField('b', { b: '05568981829' })).to.deep.equal({ b: success });
+  });
+
+  it('validator基础tel验证: 0556-8981829', function () {
+    expect(telValid.validField('b', { b: '0556-8981829' })).to.deep.equal({ b: success });
+  });
+
+});
+
+
+
+let mobileValid = new validator({
+  rules: {
+    b: {
+      required: true
+    }
+  },
+  mobile: ['b']
+});
+
+var mobileError = { valid: false, message: typeValids.mobile.message };
+
+describe('类型验证:mobile', function () {
+  it('mobile定义初始化', function () {
+    expect(mobileValid.getConfig("b").type).to.equal("mobile");
+  });
+
+  it('validator基础mobile验证: number', function () {
+    expect(mobileValid.validField('b', { b: '1.3' })).to.deep.equal({ b: mobileError });
+  });
+
+  it('validator基础mobile验证: 13400000001', function () {
+    expect(mobileValid.validField('b', { b: '13400000001' })).to.deep.equal({ b: success });
+  });
+
+  it('validator基础mobile验证: 8613400000001', function () {
+    expect(mobileValid.validField('b', { b: '+8613400000001' })).to.deep.equal({ b: mobileError });
+  });
+
+});
+
+
+let globalValid = new validator({
+  rules: {
+    b: {
+      required: true
+    }
+  },
+  globalmobile: ['b']
+});
+
+var globalError = { valid: false, message: typeValids.globalmobile.message };
+
+describe('类型验证:globalmobile', function () {
+  it('globalmobile定义初始化', function () {
+    expect(globalValid.getConfig("b").type).to.equal("globalmobile");
+  });
+
+  it('validator基础globalmobile验证: number', function () {
+    expect(globalValid.validField('b', { b: '1.3' })).to.deep.equal({ b: globalError });
+  });
+
+  it('validator基础globalmobile验证: 13400000001', function () {
+    expect(globalValid.validField('b', { b: '13400000001' })).to.deep.equal({ b: success });
+  });
+
+  it('validator基础globalmobile验证: +8613400000001', function () {
+    expect(globalValid.validField('b', { b: '+8613400000001' })).to.deep.equal({ b: success });
+  });
+
+});

@@ -1,19 +1,34 @@
-import utils from 'hey-utils';
-import valids from './validation/valids';
-import baseValids from './validation/baseValids';
+// import utils from 'hey-utils';
+// import valids from './validation/valids';
+// import baseValids from './validation/baseValids';
 
-function ruleExecute(rule, value, configValue) {
+let utils = require('hey-utils');
+let typeValids = require('./validation/typeValids');
+let baseValids = require('./validation/baseValids');
+
+function ruleExecute(rule, argus) {
   if (utils.isFunction(rule)) {
-    return rule.call(null, value, configValue);
+    return rule.apply(null, argus);
   } else if (utils.isObject(rule)) {
     let result = null;
     if (rule.pattern) {
-      result = rule.pattern.test(new String(value));
+      result = rule.pattern.test(new String(argus[0]));
     } else if (utils.isFunction(rule.valid)) {
-      result = rule.pattern.test(new String(value));
+      result = rule.valid.apply(null, argus);
     }
     return result === true ? true : rule.message;
   }
+}
+
+function combineArgs(prop, message) {
+  if (message === true || message === undefined) {
+    return {
+      [prop]: { valid: true, message: null }
+    };
+  }
+  return {
+    [prop]: { valid: false, message }
+  };
 }
 
 const DEFAULT = {
@@ -32,71 +47,195 @@ class Validator {
   initRules(rules) {
     let genRules = {};
     utils.extend(true, genRules, DEFAULT, rules);
-    for (let v in valids) {
+    let keys = Object.keys(typeValids);
+    keys.unshift('required');
+
+    for (let key in genRules.rules) {
+      let rule = genRules.rules[key];
+      if (utils.isObject(rule)) {
+        if (!utils.isArray(rule.valids)) {
+          // rule.valids = [];
+          // if (!utils.isNull(rule.valid)) {
+          //   rule.valids.push(rule.valid);
+          // }
+          // if (!utils.isNull(rule.type)) {
+          //   rule.valids.push(rule.type);
+          // }
+        }
+      } else {
+        delete genRules.rules[key];
+      }
+    }
+
+
+    for (let v of keys) {
       let validList = rules[v];
       if (utils.isArray(validList)) {
         for (let p of validList) {
           let rule = genRules.rules[p];
-          if (utils.isObject(rule)) {
-            if (v == 'required') {
-              rule.required = true;
-            } else {
-              if (utils.isArray(rule.valid)) {
-                rule.valid.unshift(v);
-              } else {
-                let old = rule.valid;
-                rule.valid = [v];
-                if (!utils.isNull(old)) {
-                  rule.valid.push(old);
-                }
-              }
-            }
+          if (!utils.isObject(rule)) {
+            rule = genRules.rules[p] = {};
+          }
+          if (v == 'required') {
+            rule.required = true;
+          } else {
+            rule.type = v;
+            // if (rule.valids.indexOf(v) == -1) {
+            //   rule.valids.push(v);
+            // }
           }
         }
       }
     }
     console.log(genRules.rules);
     console.log(genRules.combineRules);
-    genRules.combineRules = new CombineRule(genRules.combineRules);
-    this.rules = genRules;
+    this.rules = genRules.rules;
+    this.initCombineRules(genRules.combineRules);
+  }
+
+
+
+  initCombineRules(rules) {
+    let genRules = {};
+    for (let rule of rules) {
+      let parentRef = '';
+      if (rule.parentRef) parentRef = `${rule.parentRef}.`;
+      for (let ref of rule.refs) {
+        let refProp = parentRef + ref;
+        if (utils.isArray(genRules[refProp])) {
+          genRules[refProp].push(rule);
+        } else {
+          genRules[refProp] = { rule };
+        }
+      }
+    }
+    this.combineRules = genRules;
   }
 
   valid(data) {
-
+    let result = {};
+    for (let rule of rules) {
+      utils.extend(result, this.validField());
+    }
+    return result;
   }
 
-  validField(prop, next, data) {
+  getConfig(prop) {
+    return this.rules[prop];
+  }
+
+  validField(prop, data, next) {
     if (utils.isNull(prop)) {
-      next();
+      return combineArgs(prop);
     }
 
     let ruleKey = prop;
-    let value = utils.getKeyValue(this.model, prop);
+    let value = utils.getKeyValue(data, prop);
     if (prop.indexOf("[") > -1) {
       let ruleKey = prop.replace(/\[\w+\]/, "[]");
     }
     let parent = data;
+    let parentProp = '';
     if (prop.lastIndexOf(".") > -1) {
-      let parentProp = prop.substr(0, prop.lastIndexOf("."));
+      parentProp = prop.substr(0, prop.lastIndexOf("."));
       parent = utils.getKeyValue(data, parentProp);
     }
+    let rule = this.rules[ruleKey];
+    let result = this.validFieldBase(rule, value, parent);
+    if (result !== true) {
+      return combineArgs(prop, result);
+    }
+    result = this.combineRulesValid(ruleKey, value, parent, parentProp);
 
-    let rule = this.rules.rules[ruleKey];
-    if (rule) {
-      let baseValidKeys = Object.keys(baseValids);
-      for (let key of baseValidKeys) {
-        if (!utils.isNull(rule[key])) {
-          let result = ruleExecute(baseValids[key], value, rule[key]);
-          if (result !== true) next(result);
-        }
+    if (result === true && utils.isFunction(next)) {
+      if (utils.isFunction(rule.validAsync)) {
+        rule.validAsync.call(null, value, next, parent, data);
+      } else {
+        next();
       }
     }
-    let result = this.rules.combineRules.valid(ruleKey, value, parent, data);
-    if (result !== true) next(result);
-    if (utils.isFunction(rule.validAsync)) {
-      rule.validAsync.call(null, value, next, parent, data);
+
+    return utils.extend(combineArgs(prop), result);
+  }
+
+  validFieldBase(rule, value, parent) {
+    // console.log(rule, value, parent);
+    if (rule) {
+      let result = ruleExecute(baseValids.required, [value]);
+
+      if (rule.required) {
+        if (result !== true) {
+          return result;
+        }
+      } else if (result !== true) {
+        return true;
+      }
+
+      if (rule.type) {
+        result = ruleExecute(typeValids[rule.type], [value]);
+        if (result !== true) return result;
+      }
+
+      let baseValidKeys = Object.keys(baseValids)
+      baseValidKeys.shift();
+      for (let key of baseValidKeys) {
+        if (!utils.isNull(rule[key])) {
+          let result = ruleExecute(baseValids[key], [value, rule[key]]);
+          if (result !== true) return result;
+        }
+      }
+
+      if (utils.isFunction(rule.valid)) {
+        result = ruleExecute(rule.valid, [value, parent]);
+        if (result !== true) return result;
+      }
+
+      // for (let key of rule.valids) {
+      //   let result = null;
+      //   if (utils.isFunction(key)) {
+      //     result = ruleExecute(key, [value, parent]);
+      //   } else {
+      //     result = ruleExecute(typeValids[key], [value, parent]);
+      //   }
+      //   if (result !== true) return result;
+      // }
+    }
+    return true;
+  }
+
+  combineRulesValid(ruleKey, value, parent, parentProp) {
+    let genRules = this.combineRules;
+    let rules = genRules[ruleKey];
+    if (!rules) return true;
+    let refValids = {};
+    let count = 0;
+    for (let rule of rules) {
+      let values = [];
+      for (let ref of rule.refs) {
+        let v = utils.getKeyValue(parent, ref);
+        let prop = parentProp + ref;
+        //当有基本参数验证不通过时，暂时不验证
+        if (this.validFieldBase(prop, v, parent) != true) {
+          return true;
+        }
+        values.push(v);
+      }
+      let valid = null;
+      if (utils.isString(rule.valid)) {
+        valid = baseValids(rule.valid);
+        if (utils.isNull(valid)) {
+          throw Error(`不存在命名为${valid}的验证规则`);
+        }
+        let result = valid.apply(null, values, parent);
+        count++;
+        let prop = parentProp + (rule.refs[rule.refs.length - 1]);
+        utils.extend(refValids, combineArgs(prop, result));
+      }
+    }
+    if (count == 0) {
+      return true;
     } else {
-      next();
+      return refValids;
     }
   }
 }

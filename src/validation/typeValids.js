@@ -1,7 +1,7 @@
 let valids = {
   int: {
     valid(value) {
-      return parseInt(value, 10) === value;
+      return parseInt(value, 10) == value;
     },
     message: '请输入正确的整数'
   },
@@ -16,7 +16,7 @@ let valids = {
     message: '请输入正确的邮箱格式'
   },
   url: {
-    pattern: /^((http[s]{0,1}|ftp):\/\/)?[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/,
+    pattern: /^((\w+):\/\/)?([A-z0-9]+[_\-]?[A-z0-9]+\.)*[A-z0-9]+\-?[A-z0-9]+\.[A-z]{2,}(\/.*)*\/?$/,
     message: '请输入正确的网址格式'
   },
   tel: {
@@ -28,8 +28,8 @@ let valids = {
     message: '请输入正确的手机格式'
   },
   globalmobile: {
-    pattern: /^[0-9a]+$/,
+    pattern: /^[\+\-0-9a]+$/,
     message: '请输入正确的国际号码格式'
   } //国际号码
 };
-export default valids;
+module.exports = valids;

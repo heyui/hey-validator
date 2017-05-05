@@ -3,7 +3,7 @@ let valids = {
     valid(value) {
       return value !== null && value !== undefined && new String(value).length > 0;
     },
-    message: '不能为空'
+    message: '字段不能为空'
   },
   maxLen(value, length) {
     let result = value !== null && value !== undefined && new String(value).length <= length;
@@ -22,4 +22,4 @@ let valids = {
     return result === true ? true : `不能大于${length}`;
   }
 };
-export default valids;
+module.exports = valids;
