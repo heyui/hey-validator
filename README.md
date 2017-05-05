@@ -9,10 +9,10 @@
 
 ## 验证定义
 ```js
-func(prop, value, next){
-    next();
+func(prop, value){
+    return true;
     //或者
-    throw Error('message');
+    return "error message";
 }
 ```
 
@@ -64,7 +64,7 @@ new Valid({
     combineRules:[{
       parentRef: 'e[]',
       refs: ['b', 'c'],
-      valid(){
+      valid(valueb,valuec){
         if(condition){
           return "a不能大于b";
         }
