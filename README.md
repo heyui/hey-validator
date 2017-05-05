@@ -38,12 +38,13 @@ new Valid({
         },
         c:{
             required: true,
-            valid: ['int', (prop, parent, data){
+            type: 'int',
+            valid(prop, parent, data){
               if(resp.isExsit){
                 return "错误";
               }
               return true;
-            }],
+            },
             validAsync(prop, parent, next, data){
               $.ajax('/test').then((resp)){
                 if(resp.isExsit){
@@ -65,7 +66,7 @@ new Valid({
       refs: ['b', 'c'],
       valid(){
         if(condition){
-          return new Error("a不能大于b");
+          return "a不能大于b";
         }
         return true;
       }

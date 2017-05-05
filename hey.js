@@ -3,7 +3,7 @@ module.exports = {
   webpack: {
     umd: {
       entry: "./src/index.js",
-      library: "validator",
+      library: "Validator",
       filename: 'validator.js'
     }
   }

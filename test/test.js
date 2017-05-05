@@ -1,10 +1,10 @@
-var validator = require('../src/index');
+var Validator = require('../src/index');
 var baseValids = require('../src/validation/baseValids');
 var typeValids = require('../src/validation/typeValids');
 var expect = require('chai').expect;
 'use strict';
 
-let v = new validator({
+let v = new Validator({
   rules: {
     a: {
       required: true
@@ -58,7 +58,7 @@ describe('类型验证:int', function () {
 
 });
 
-let numValid = new validator({
+let numValid = new Validator({
   rules: {
     b: {
       required: true
@@ -92,7 +92,7 @@ describe('类型验证:number', function () {
 
 
 
-let emailValid = new validator({
+let emailValid = new Validator({
   rules: {
     b: {
       required: true
@@ -128,7 +128,7 @@ describe('类型验证:email', function () {
 
 
 
-let urlValid = new validator({
+let urlValid = new Validator({
   rules: {
     b: {
       required: true
@@ -171,7 +171,7 @@ describe('类型验证:url', function () {
 })
 
 
-let telValid = new validator({
+let telValid = new Validator({
   rules: {
     b: {
       required: true
@@ -211,7 +211,7 @@ describe('类型验证:tel', function () {
 
 
 
-let mobileValid = new validator({
+let mobileValid = new Validator({
   rules: {
     b: {
       required: true
@@ -242,7 +242,7 @@ describe('类型验证:mobile', function () {
 });
 
 
-let globalValid = new validator({
+let globalValid = new Validator({
   rules: {
     b: {
       required: true
@@ -268,6 +268,159 @@ describe('类型验证:globalmobile', function () {
 
   it('validator基础globalmobile验证: +8613400000001', function () {
     expect(globalValid.validField('b', { b: '+8613400000001' })).to.deep.equal({ b: success });
+  });
+
+});
+
+let minMaxValid = new Validator({
+  rules: {
+    b: {
+      required: true,
+      type: 'number',
+      min: 12,
+      max: 23
+    }
+  }
+});
+describe('基础验证:min max', function () {
+
+  it('validator基础min max验证: min', function () {
+    expect(minMaxValid.validField('b', { b: '1.3' })).to.deep.equal({ b: { valid: false, message: "字段不能小于12" } });
+  });
+
+  it('validator基础min max验证: max', function () {
+    expect(minMaxValid.validField('b', { b: 13400000001 })).to.deep.equal({ b: { valid: false, message: "字段不能大于23" } });
+  });
+
+  it('validator基础min max验证: 正确数值', function () {
+    expect(minMaxValid.validField('b', { b: '14' })).to.deep.equal({ b: success });
+  });
+
+});
+
+
+let minMaxLenValid = new Validator({
+  rules: {
+    b: {
+      required: true,
+      minLen: 10,
+      maxLen: 23
+    }
+  }
+});
+describe('基础验证:minLen maxLen', function () {
+
+  it('validator基础minLen maxLen验证: minLen', function () {
+    expect(minMaxLenValid.validField('b', { b: '123' })).to.deep.equal({ b: { valid: false, message: "字段长度不能小于10" } });
+  });
+
+  it('validator基础minLen maxLen验证: maxLen', function () {
+    expect(minMaxLenValid.validField('b', { b: '134000000011340000000113400000001' })).to.deep.equal({ b: { valid: false, message: "字段长度不能大于23" } });
+  });
+
+  it('validator基础minLen maxLen验证: 正确数值', function () {
+    expect(minMaxLenValid.validField('b', { b: '13400000001' })).to.deep.equal({ b: success });
+  });
+
+});
+
+let combineValid = new Validator({
+  rules: {
+    b: {
+      required: true,
+      min: 10,
+      max: 23,
+      valid(value) {
+        return value == 15 ? true : "b的值不等于15";
+      }
+    },
+    a: {
+      type: "number",
+      min: 10,
+      max: 23
+    },
+    c: {
+      type: "number",
+    },
+    id: {
+      type: 'number',
+      validAsync(value, next) {
+        setTimeout(() => {
+          if (value == 15) {
+            next('id已存在');
+          } else {
+            next();
+          }
+        }, 1000);
+      }
+    }
+  },
+  combineRules: [{
+    refs: ['a', 'b'],
+    valid: {
+      valid(value1, value2) {
+        return value1 == value2;
+      },
+      message: 'a和b的值不一致'
+    }
+  }, {
+    refs: ['c', 'b'],
+    valid: {
+      valid(value1, value2) {
+        return value1 == value2;
+      },
+      message: 'c和b的值不一致'
+    }
+  }]
+});
+
+describe('valid验证', function () {
+
+  it('validator基础valid验证: valid', function () {
+    expect(combineValid.validField('b', { b: '22' })).to.deep.equal({ b: { valid: false, message: "b的值不等于15" } });
+  });
+
+  it('validator基础valid验证: valid', function () {
+    expect(combineValid.validField('b', { b: '15' })).to.deep.equal({ b: success });
+  });
+
+  it('validator基础valid验证: combine1', function () {
+    expect(combineValid.validField('b', { b: '15', a: '14' })).to.deep.equal({ b: { valid: false, message: "a和b的值不一致" } });
+  });
+
+  it('validator基础valid验证: combine2', function () {
+    expect(combineValid.validField('b', { b: '15', a: 13400000001 })).to.deep.equal({ b: success });
+  });
+
+  it('validator基础valid验证: combine3', function () {
+    expect(combineValid.validField('a', { b: '15', a: '14' })).to.deep.equal({ b: { valid: false, message: "a和b的值不一致" }, a: success });
+  });
+
+  it('validator基础valid验证: combine4', function () {
+    expect(combineValid.validField('b', { b: '15', a: '15', c: 1 })).to.deep.equal({ b: { valid: false, message: "c和b的值不一致" } });
+  });
+
+  it('validator基础valid验证: combine5', function () {
+    expect(combineValid.validField('b', { b: '15', a: '15', c: "ad" })).to.deep.equal({ b: success });
+  });
+
+  it('validator基础valid验证: combine6', function () {
+    expect(combineValid.validField('b', { b: '15', a: '15', c: 15 })).to.deep.equal({ b: success });
+  });
+
+  it('validator基础validAsync验证: 异步1', function (done) {
+    expect(combineValid.validField('id', { id: '14' }, (result) => {
+      expect(result).to.deep.equal({ id: { valid: true, message: null, loading: false } });
+      done();
+    })).to.deep.equal({ id: { valid: true, message: null, loading: true } });
+  });
+
+  it('validator基础validAsync验证: 异步2', function (done) {
+    let result = combineValid.validField('id', { id: '15' }, (result) => {
+      expect(result).to.deep.equal({ id: { valid: false, message: "id已存在", loading: false } });
+      done();
+    });
+    expect(result).to.deep.equal({ id: { valid: true, message: null, loading: true } });
   });
 
 });

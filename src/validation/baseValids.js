@@ -5,21 +5,21 @@ let valids = {
     },
     message: '字段不能为空'
   },
-  maxLen(value, length) {
-    let result = value !== null && value !== undefined && new String(value).length <= length;
-    return result === true ? true : `长度不能大于${length}`;
+  maxLen(value, configValue) {
+    let result = value !== null && value !== undefined && new String(value).length <= configValue;
+    return result === true ? true : `字段长度不能大于${configValue}`;
   },
-  minLen(value, length) {
-    let result = value !== null && value !== undefined && new String(value).length >= length;
-    return result === true ? true : `长度不能小于${length}`;
+  minLen(value, configValue) {
+    let result = value !== null && value !== undefined && new String(value).length >= configValue;
+    return result === true ? true : `字段长度不能小于${configValue}`;
   },
   max(value, configValue) {
     let result = value !== null && value !== undefined && new Number(value) <= configValue;
-    return result === true ? true : `不能小于${length}`;
+    return result === true ? true : `字段不能大于${configValue}`;
   },
-  max(value, configValue) {
+  min(value, configValue) {
     let result = value !== null && value !== undefined && new Number(value) >= configValue;
-    return result === true ? true : `不能大于${length}`;
+    return result === true ? true : `字段不能小于${configValue}`;
   }
 };
 module.exports = valids;

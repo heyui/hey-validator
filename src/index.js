@@ -88,7 +88,6 @@ class Validator {
       }
     }
     console.log(genRules.rules);
-    console.log(genRules.combineRules);
     this.rules = genRules.rules;
     this.initCombineRules(genRules.combineRules);
   }
@@ -105,10 +104,11 @@ class Validator {
         if (utils.isArray(genRules[refProp])) {
           genRules[refProp].push(rule);
         } else {
-          genRules[refProp] = { rule };
+          genRules[refProp] = [rule];
         }
       }
     }
+    console.log(genRules);
     this.combineRules = genRules;
   }
 
@@ -121,7 +121,11 @@ class Validator {
   }
 
   getConfig(prop) {
-    return this.rules[prop];
+    let ruleKey = prop;
+    if (prop.indexOf("[") > -1) {
+      ruleKey = prop.replace(/\[\w+\]/, "[]");
+    }
+    return this.rules[ruleKey];
   }
 
   validField(prop, data, next) {
@@ -132,7 +136,7 @@ class Validator {
     let ruleKey = prop;
     let value = utils.getKeyValue(data, prop);
     if (prop.indexOf("[") > -1) {
-      let ruleKey = prop.replace(/\[\w+\]/, "[]");
+      ruleKey = prop.replace(/\[\w+\]/, "[]");
     }
     let parent = data;
     let parentProp = '';
@@ -146,16 +150,17 @@ class Validator {
       return combineArgs(prop, result);
     }
     result = this.combineRulesValid(ruleKey, value, parent, parentProp);
-
-    if (result === true && utils.isFunction(next)) {
-      if (utils.isFunction(rule.validAsync)) {
-        rule.validAsync.call(null, value, next, parent, data);
-      } else {
-        next();
-      }
+    let baseResult = combineArgs(prop);
+    if (result === true && utils.isFunction(next) && utils.isFunction(rule.validAsync)) {
+      rule.validAsync.call(null, value, (result) => {
+        let n = combineArgs(prop, result);
+        n[prop].loading = false;
+        next(n);
+      }, parent, data);
+      baseResult[prop].loading = true;
     }
 
-    return utils.extend(combineArgs(prop), result);
+    return utils.extend(baseResult, result);
   }
 
   validFieldBase(rule, value, parent) {
@@ -185,20 +190,10 @@ class Validator {
         }
       }
 
-      if (utils.isFunction(rule.valid)) {
+      if (!utils.isNull(rule.valid)) {
         result = ruleExecute(rule.valid, [value, parent]);
         if (result !== true) return result;
       }
-
-      // for (let key of rule.valids) {
-      //   let result = null;
-      //   if (utils.isFunction(key)) {
-      //     result = ruleExecute(key, [value, parent]);
-      //   } else {
-      //     result = ruleExecute(typeValids[key], [value, parent]);
-      //   }
-      //   if (result !== true) return result;
-      // }
     }
     return true;
   }
@@ -215,18 +210,21 @@ class Validator {
         let v = utils.getKeyValue(parent, ref);
         let prop = parentProp + ref;
         //当有基本参数验证不通过时，暂时不验证
-        if (this.validFieldBase(prop, v, parent) != true) {
-          return true;
+        if (this.validFieldBase(this.rules[prop], v, parent) != true || !baseValids.required.valid(v)) {
+          break;
         }
         values.push(v);
       }
-      let valid = null;
+      if (values.length < rule.refs.length) continue;
+      let valid = rule.valid;
       if (utils.isString(rule.valid)) {
-        valid = baseValids(rule.valid);
+        valid = combineValids(rule.valid);
         if (utils.isNull(valid)) {
           throw Error(`不存在命名为${valid}的验证规则`);
         }
-        let result = valid.apply(null, values, parent);
+      }
+      let result = ruleExecute(valid, values);
+      if (result !== true) {
         count++;
         let prop = parentProp + (rule.refs[rule.refs.length - 1]);
         utils.extend(refValids, combineArgs(prop, result));

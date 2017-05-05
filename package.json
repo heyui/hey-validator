@@ -2,7 +2,7 @@
   "name": "hey-validator",
   "version": "0.0.1",
   "description": "javascript validator",
-  "main": "build/manba.js",
+  "main": "build/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/heyui/hey-validator.git"
