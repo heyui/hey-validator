@@ -23,7 +23,8 @@
     "url": "https://github.com/heyui/hey-validator/issues"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register ./test/*.js"
+    "test": "mocha --compilers js:babel-core/register ./test/test-dev.js",
+    "test-build": "mocha --compilers js:babel-core/register ./test/test-build.js"
   },
   "homepage": "https://github.com/heyui/hey-validator#readme",
   "readmeFilename": "README.md"
