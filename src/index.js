@@ -1,10 +1,7 @@
-// import utils from 'hey-utils';
-// import valids from './validation/valids';
-// import baseValids from './validation/baseValids';
-
 let utils = require('hey-utils');
 let typeValids = require('./validation/typeValids');
 let baseValids = require('./validation/baseValids');
+let combineValids = require('./validation/combineValids');
 
 function ruleExecute(rule, argus) {
   if (utils.isFunction(rule)) {
@@ -87,7 +84,7 @@ class Validator {
         }
       }
     }
-    console.log(genRules.rules);
+    // console.log(genRules.rules);
     this.rules = genRules.rules;
     this.initCombineRules(genRules.combineRules);
   }
@@ -108,7 +105,7 @@ class Validator {
         }
       }
     }
-    console.log(genRules);
+    // console.log(genRules);
     this.combineRules = genRules;
   }
 
@@ -208,7 +205,7 @@ class Validator {
       let values = [];
       for (let ref of rule.refs) {
         let v = utils.getKeyValue(parent, ref);
-        let prop = parentProp + ref;
+        let prop = (rule.parentRef&&parentProp?(parentProp + "."):"") + ref;
         //当有基本参数验证不通过时，暂时不验证
         if (this.validFieldBase(this.rules[prop], v, parent) != true || !baseValids.required.valid(v)) {
           break;
@@ -217,16 +214,18 @@ class Validator {
       }
       if (values.length < rule.refs.length) continue;
       let valid = rule.valid;
-      if (utils.isString(rule.valid)) {
-        valid = combineValids(rule.valid);
-        if (utils.isNull(valid)) {
+      if (utils.isObject(valid) && utils.isString(valid.valid)) {
+        valid.valid = combineValids[valid.valid];
+        if (utils.isNull(valid.valid)) {
           throw Error(`不存在命名为${valid}的验证规则`);
         }
       }
+        // console.log(valid);
+      // console.log(parentProp);
       let result = ruleExecute(valid, values);
       if (result !== true) {
         count++;
-        let prop = parentProp + (rule.refs[rule.refs.length - 1]);
+        let prop = (rule.parentRef&&parentProp?(parentProp + "."):"") + (rule.refs[rule.refs.length - 1]);
         utils.extend(refValids, combineArgs(prop, result));
       }
     }
