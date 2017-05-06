@@ -403,7 +403,7 @@ module.exports = function (Validator) {
     });
 
     it('validator基础valid验证: lessThan', function () {
-      expect(combineValid.validField('c', { c: '16', d: { a: '13'}})).to.deep.equal({ c: success, 'd.a': { valid: false, message: "c必须小于d.a" } });
+      expect(combineValid.validField('c', { c: '166', d: { a: '23'}})).to.deep.equal({ c: success, 'd.a': { valid: false, message: "c必须小于d.a" } });
     });
 
     it('validator基础valid验证: greaterThan', function () {
