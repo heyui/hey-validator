@@ -366,11 +366,8 @@ module.exports = function (Validator) {
       }
     }, {
       refs: ['c', 'b'],
-      valid: {
-        valid(value1, value2) {
-          return value1 == value2;
-        },
-        message: 'c和b的值不一致'
+      valid(value1, value2) {
+        return value1 == value2 ? true : 'c和b的值不一致';
       }
     }]
   });
