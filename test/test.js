@@ -356,18 +356,35 @@ module.exports = function (Validator) {
         }
       }
     },
+    number: ['d.a', 'd.b'],
     combineRules: [{
       refs: ['a', 'b'],
       valid: {
-        valid(value1, value2) {
-          return value1 == value2;
-        },
+        valid: 'equal',
         message: 'a和b的值不一致'
       }
     }, {
       refs: ['c', 'b'],
       valid(value1, value2) {
         return value1 == value2 ? true : 'c和b的值不一致';
+      }
+    },{
+      refs: ['c', 'd.a'],
+      valid: {
+        valid: 'lessThan',
+        message: 'c必须小于d.a'
+      }
+    },{
+      refs: ['c', 'd.b'],
+      valid: {
+        valid: 'greaterThan',
+        message: 'c必须大于d.b'
+      }
+    }, {
+      parentRef: 'd',
+      refs: ['a', 'b'],
+      valid(value1, value2) {
+        return value1 == value2 ? true : 'd.a和d.b的值不一致';
       }
     }]
   });
@@ -380,6 +397,14 @@ module.exports = function (Validator) {
 
     it('validator基础valid验证: valid', function () {
       expect(combineValid.validField('b', { b: '15' })).to.deep.equal({ b: success });
+    });
+
+    it('validator基础valid验证: lessThan', function () {
+      expect(combineValid.validField('c', { c: '166', d: { a: '23'}})).to.deep.equal({ c: success, 'd.a': { valid: false, message: "c必须小于d.a" } });
+    });
+
+    it('validator基础valid验证: greaterThan', function () {
+      expect(combineValid.validField('c', { c: '15', d: { b: '16'}})).to.deep.equal({ c: success, 'd.b': { valid: false, message: "c必须大于d.b" } });
     });
 
     it('validator基础valid验证: combine1', function () {
@@ -404,6 +429,10 @@ module.exports = function (Validator) {
 
     it('validator基础valid验证: combine6', function () {
       expect(combineValid.validField('b', { b: '15', a: '15', c: 15 })).to.deep.equal({ b: success });
+    });
+
+    it('validator基础valid验证: combine7', function () {
+      expect(combineValid.validField('d.a', { d: { b: '15', a: '14' } })).to.deep.equal({ 'd.a': success, 'd.b': { valid: false, message: 'd.a和d.b的值不一致' } });
     });
 
     it('validator基础validAsync验证: 异步1', function (done) {
