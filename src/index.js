@@ -109,10 +109,23 @@ class Validator {
     this.combineRules = genRules;
   }
 
-  valid(data, next) {
+  valid(data, prop = "", sourceData) {
     let result = {};
-    for (let rule of this.rules) {
-      utils.extend(result, this.validField(rule, data, next));
+    if (prop != '') {
+      // log(prop);
+      utils.extend(result, this.validField(prop, sourceData));
+    }
+    if (sourceData == undefined) sourceData = data;
+    if (utils.isArray(data)) {
+      for (let i = 0; i < data.length; i++) {
+        let nowProp = `${prop}[${i}]`;
+        utils.extend(result, this.valid(data[i], nowProp, sourceData));
+      }
+    } else if (utils.isObject(data)) {
+      for (let d in data) {
+        let nowProp = prop + (prop == "" ? "" : ".") + d;
+        utils.extend(result, this.valid(data[d], nowProp, sourceData));
+      }
     }
     return result;
   }
