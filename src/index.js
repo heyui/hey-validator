@@ -64,7 +64,6 @@ class Validator {
       }
     }
 
-
     for (let v of keys) {
       let validList = rules[v];
       if (utils.isArray(validList)) {
@@ -87,6 +86,10 @@ class Validator {
     // console.log(genRules.rules);
     this.rules = genRules.rules;
     this.initCombineRules(genRules.combineRules);
+  }
+
+  updateRule(rules) {
+    this.initRules(rules);
   }
 
 
