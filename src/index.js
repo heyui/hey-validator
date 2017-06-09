@@ -38,6 +38,7 @@ class Validator {
       console.error("validator:请传递正确的验证参数");
     }
     this.rules = {};
+    this.combineRules = {};
     this.initRules(rules);
   }
 
@@ -89,11 +90,9 @@ class Validator {
   }
 
   updateRule(rules) {
-    this.initRules(rules);
+    this.initRules(rules || {});
   }
-
-
-
+  
   initCombineRules(rules) {
     let genRules = {};
     for (let rule of rules) {

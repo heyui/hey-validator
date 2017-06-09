@@ -24,8 +24,8 @@ new Valid({
         a:{
             valid: 'int|number|email|url|tel|mobile|globalmobile', //可以自定义
             required: true,
-            maxlen: 1000,
-            minlen: 2
+            maxLen: 1000,
+            minLen: 2
         },
         b:{
             valid: {
