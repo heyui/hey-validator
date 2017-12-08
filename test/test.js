@@ -337,18 +337,6 @@ module.exports = function (Validator) {
       },
       c: {
         type: "number",
-      },
-      id: {
-        type: 'number',
-        validAsync(value, next) {
-          setTimeout(() => {
-            if (value == 15) {
-              next('id已存在');
-            } else {
-              next();
-            }
-          }, 1000);
-        }
       }
     },
     number: ['d.a', 'd.b'],
@@ -436,19 +424,59 @@ module.exports = function (Validator) {
 
   describe('Async valid验证', function () {
 
+    let asyncValid = new Validator({
+      rules: {
+        id1: {
+          validAsync(value, next) {
+            setTimeout(() => {
+              if (value == 15) {
+                next('id1已存在');
+              } else {
+                next();
+              }
+            }, 1000);
+          }
+        },
+        id2: {
+          validAsync(value, next) {
+            setTimeout(() => {
+              if (value == 15) {
+                next('id2已存在');
+              } else {
+                next();
+              }
+            }, 1000);
+          }
+        }
+      }
+    });
     it('validator基础validAsync验证: 异步1', function (done) {
-      expect(combineValid.validField('id', { id: '14' }, (result) => {
-        expect(result).to.deep.equal({ id: { valid: true, message: null, loading: false, type: "async" } });
+      expect(asyncValid.validField('id1', { id1: '14' }, (result) => {
+        expect(result).to.deep.equal({ id1: { valid: true, message: null, loading: false, type: "async" } });
         done();
-      })).to.deep.equal({ id: { valid: true, message: null, loading: true, type: "base" } });
+      })).to.deep.equal({ id1: { valid: true, message: null, loading: true, type: "base" } });
     });
 
     it('validator基础validAsync验证: 异步2', function (done) {
-      let result = combineValid.validField('id', { id: '15' }, (result) => {
-        expect(result).to.deep.equal({ id: { valid: false, message: "id已存在", loading: false, type: "async" } });
+      let result = asyncValid.validField('id1', { id1: '15' }, (result) => {
+        expect(result).to.deep.equal({ id1: { valid: false, message: "id1已存在", loading: false, type: "async" } });
         done();
       });
-      expect(result).to.deep.equal({ id: { valid: true, message: null, loading: true, type: "base" } });
+      expect(result).to.deep.equal({ id1: { valid: true, message: null, loading: true, type: "base" } });
+    });
+
+    it('validator基础validAsync验证: 异步集成', function (done) {
+      expect(asyncValid.valid({ id1: '14', id2: '14' }, (result) => {
+        expect(result).to.deep.equal({ 
+          id1: { valid: true, message: null, loading: false, type: "async" },
+          id2: { valid: true, message: null, loading: false, type: "async" },
+        });
+        done();
+      }))
+      .to.deep.equal({
+        id1: { valid: true, message: null, loading: true, type: "base" },
+        id2: { valid: true, message: null, loading: true, type: "base" }
+      });
     });
 
   });

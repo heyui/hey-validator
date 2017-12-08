@@ -104,7 +104,28 @@ class Validator {
     this.combineRules = genRules;
   }
 
-  valid(data, next, prop = "", sourceData) {
+  valid(data, next) {
+    let loadings = [];
+    let result = this.validData(data, function(r){
+      for(let key in r){
+        if(loadings.indexOf(key) > -1){
+          loadings.splice(loadings.indexOf(key), 1);
+        }
+      }
+      utils.extend(result, r);
+      if(next && loadings.length == 0){
+        next.call(this, result);
+      }
+    });
+    for(let prop in result){
+      if(result[prop].loading){
+        loadings.push(prop);
+      }
+    }
+    return result;
+  }
+
+  validData(data, next, prop = "", sourceData) {
     let result = {};
     if (prop != '') {
       // log(prop);
@@ -114,12 +135,12 @@ class Validator {
     if (utils.isArray(data)) {
       for (let i = 0; i < data.length; i++) {
         let nowProp = `${prop}[${i}]`;
-        utils.extend(result, this.valid(data[i], next, nowProp, sourceData));
+        utils.extend(result, this.validData(data[i], next, nowProp, sourceData));
       }
     } else if (utils.isObject(data)) {
       for (let d in data) {
         let nowProp = prop + (prop == "" ? "" : ".") + d;
-        utils.extend(result, this.valid(data[d], next, nowProp, sourceData));
+        utils.extend(result, this.validData(data[d], next, nowProp, sourceData));
       }
     }
     return result;
