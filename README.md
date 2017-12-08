@@ -222,20 +222,36 @@ let rule = {
           next(true);
         }, 50);
       }
+    },
+    async2: {
+      validAsync(prop, next, parent, data){
+        setTimeout(()=>{
+          if(prop == '哈哈'){
+            next('prop不需要叫哈哈');
+          }
+          next(true);
+        }, 50);
+      }
     }
   }
 }
 
 let validator = new Validator(rule);
-//全部验证
+//部分验证
 validator.validField('async', {async: '呵呵'}, (result)=>{
-// result：
-// { async:
-//    { valid: false,
-//      message: 'prop需要叫哈哈',
-//      type: 'async',
-//      loading: false } }
+  // { async:
+  //    { valid: false,
+  //      message: 'prop需要叫哈哈',
+  //      type: 'async',
+  //      loading: false } }
 });
-// { async: { valid: true, message: null, type: 'base', loading: true }}
+
+//全部验证
+validator.valid({async: '呵呵', async2: '呵呵'}, (result)=>{
+  // 当所有的异步验证都执行完毕的时候调用
+  // 所有验证的result
+}, (result) => {
+  // 每一个异步验证执行完毕的时候调用
+});
 
 ```
