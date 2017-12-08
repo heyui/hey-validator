@@ -7,7 +7,7 @@ Validate Form Data.
 npm install -S hey-validator
 ```
 
-## 定义方式
+## API
 ```js
 
 new Valid({
@@ -89,7 +89,7 @@ new Valid({
 ```
 
 
-## 验证方法定义
+## Define Valid Function
 ```js
 func(prop, value){
     return true;
@@ -98,7 +98,7 @@ func(prop, value){
 }
 ```
 
-## 全局定义
+## Define Global Valid
 ```js
 
 Valid.config({
@@ -126,9 +126,9 @@ Valid.config({
 
 ```
 
-## 使用方法
+## Usage
 
-### 方法验证
+### type
 ```js
 
 let rule = {
@@ -169,7 +169,7 @@ validator.validField('pro', {pro: '0'});
 ```
 
 
-### combine验证
+### combine
 ```js
 
 let rule = {
@@ -208,7 +208,7 @@ validator.valid({int: 1, number: '1'});
 ```
 
 
-### async验证
+### async
 ```js
 
 let rule = {
