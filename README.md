@@ -1,19 +1,10 @@
 # validator
-- 验证字符串非空
-- 验证字符串长度
-- 数字填写控制
-- 整数填写控制
-- 验证邮箱，验证网址，其他验证
-- 验证手机号码
-- 验证电话号码
+Validate Form Data.
 
-## 验证方法定义
-```js
-func(prop, value){
-    return true;
-    //或者
-    return "error message";
-}
+## Install
+
+```sh
+npm install -S hey-validator
 ```
 
 ## 定义方式
@@ -62,7 +53,7 @@ new Valid({
         }
     },
     combineRules:[{
-      parentRef: 'e[]',
+      parentRef: 'e[]', //如果验证的是子集的数据，则需要定义父级
       refs: ['b', 'c'],
       valid(valueb,valuec){
         if(condition){
@@ -94,6 +85,17 @@ new Valid({
     globalmobile:['a'] //国际号码
 });
 
+
+```
+
+
+## 验证方法定义
+```js
+func(prop, value){
+    return true;
+    //或者
+    return "error message";
+}
 ```
 
 ## 全局定义
@@ -122,13 +124,11 @@ Valid.config({
     }
 })
 
-
 ```
 
+## 使用方法
 
-
-## 方法验证
-
+### 方法验证
 ```js
 
 let rule = {
@@ -166,8 +166,13 @@ validator.validField('number', {int: '123.23'});
 
 validator.validField('pro', {pro: '0'});
 // { pro: { valid: false, message: 'pro不能为0', type: 'base' } }
+```
 
-rule = {
+
+### combine验证
+```js
+
+let rule = {
   rules: {
     int: {
       type: 'int'
@@ -185,7 +190,7 @@ rule = {
   }]
 }
 
-validator = new Validator(rule);
+let validator = new Validator(rule);
 //全部验证
 validator.valid({int: '不是number', number: '0'});
 // { int: { valid: false, message: '不是正确的整数格式', type: 'base' },
@@ -200,9 +205,13 @@ validator.valid({int: 1, number: '1'});
 //   number: { valid: false, message: 'c必须大于d.b', type: 'combine' } }
 
 
+```
 
 
-rule = {
+### async验证
+```js
+
+let rule = {
   rules: {
     async: {
       validAsync(prop, next, parent, data){
@@ -217,7 +226,7 @@ rule = {
   }
 }
 
-validator = new Validator(rule);
+let validator = new Validator(rule);
 //全部验证
 validator.validField('async', {async: '呵呵'}, (result)=>{
 // result：
