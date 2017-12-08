@@ -104,7 +104,7 @@ class Validator {
     this.combineRules = genRules;
   }
 
-  valid(data, next) {
+  valid(data, allNext, next) {
     let loadings = [];
     let result = this.validData(data, function(r){
       for(let key in r){
@@ -113,8 +113,11 @@ class Validator {
         }
       }
       utils.extend(result, r);
-      if(next && loadings.length == 0){
-        next.call(this, result);
+      if(next){
+        next.call(this, r);
+      }
+      if(allNext && loadings.length == 0){
+        allNext.call(this, result);
       }
     });
     for(let prop in result){
