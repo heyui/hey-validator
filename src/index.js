@@ -100,7 +100,7 @@ class Validator {
         }
       }
     }
-    console.log(genRules);
+    // console.log(genRules);
     this.combineRules = genRules;
   }
 

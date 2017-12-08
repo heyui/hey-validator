@@ -243,32 +243,27 @@ module.exports = function (Validator) {
   });
 
 
-  let globalValid = new Validator({
+  let patternValid = new Validator({
     rules: {
-      b: {
-        required: true
+      a: {
+        valid: {
+          pattern: /^[0-9]+$/,
+          message: "请输入正确的数字格式"
+        }
       }
-    },
-    globalmobile: ['b']
+    }
   });
 
-  var globalError = { valid: false, message: typeValids.globalmobile.message, type: "base" };
+  var patternError = { valid: false, message: "请输入正确的数字格式", type: "base" };
 
-  describe('类型验证:globalmobile', function () {
-    it('globalmobile定义初始化', function () {
-      expect(globalValid.getConfig("b").type).to.equal("globalmobile");
+  describe('正则表达式验证:pattern', function () {
+
+    it('validator基础pattern验证1', function () {
+      expect(patternValid.validField('a', { a: '1.22a' })).to.deep.equal({ a: patternError });
     });
 
-    it('validator基础globalmobile验证: number', function () {
-      expect(globalValid.validField('b', { b: '1.3' })).to.deep.equal({ b: globalError });
-    });
-
-    it('validator基础globalmobile验证: 13400000001', function () {
-      expect(globalValid.validField('b', { b: '13400000001' })).to.deep.equal({ b: success });
-    });
-
-    it('validator基础globalmobile验证: +8613400000001', function () {
-      expect(globalValid.validField('b', { b: '+8613400000001' })).to.deep.equal({ b: success });
+    it('validator基础pattern验证2', function () {
+      expect(patternValid.validField('a', { a: '001000' })).to.deep.equal({ a: success });
     });
 
   });

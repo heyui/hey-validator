@@ -7,7 +7,7 @@
 - 验证手机号码
 - 验证电话号码
 
-## 验证定义
+## 验证方法定义
 ```js
 func(prop, value){
     return true;
@@ -22,7 +22,7 @@ func(prop, value){
 new Valid({
     rules:{
         a:{
-            valid: 'int|number|email|url|tel|mobile|globalmobile', //可以自定义
+            type: 'int|number|email|url|tel|mobile|globalmobile', //可以自定义
             required: true,
             maxLen: 1000,
             minLen: 2
@@ -45,7 +45,7 @@ new Valid({
               }
               return true;
             },
-            validAsync(prop, parent, next, data){
+            validAsync(prop, next, parent , data){
               $.ajax('/test').then((resp)){
                 if(resp.isExsit){
                   next("已存在");
@@ -66,19 +66,24 @@ new Valid({
       refs: ['b', 'c'],
       valid(valueb,valuec){
         if(condition){
-          return "a不能大于b";
+          return "b不能大于c";
         }
         return true;
       }
     },{
       refs: ['b', 'c'],
-      valid: 'lessThan', //greaterThan
-      message: "开始时间必须小于结束时间"
+      valid: {
+        valid: 'lessThan', //greaterThan
+        message: "开始时间必须小于结束时间"
+      }
     },{
       refs: ['d', 'e'],
-      valid: 'equal',
-      message: "两次密码输入必须一致"
+      valid: : {
+        valid: 'equal',
+        message: "两次密码输入必须一致"
+      }
     }],
+    //可以对一些同一种类型的类型判断集成设定
     required:['b','c','e','f','e',"d.b","e[].a"],
     int:['a'],
     number:['a'],
@@ -107,14 +112,6 @@ Valid.config({
         message: '不符合自定义要求'
       }
     },
-    validAsyncs:{
-      test(prop, parent, next, data){
-        if(condition){
-          next();
-        }
-        next('');
-      }
-    },
     combineValids:{
       test(value1, value2){
         if(condition){
@@ -128,3 +125,108 @@ Valid.config({
 
 ```
 
+
+
+## 方法验证
+
+```js
+
+let rule = {
+  rules: {
+    int: {
+      type: 'int'
+    },
+    number: {
+      type: 'number'
+    },
+    url: {
+      type: 'url'
+    },
+    pro: {
+      valid(prop, parent, data){
+        if(prop == '0'){
+          return "pro不能为0";
+        }
+        return true;
+      }
+    }
+  },
+  required: ['int']
+}
+let validator = new Validator(rule);
+//部分验证
+validator.validField('int', {int: ''});
+// { a: { valid: false, message: '不能为空', type: 'base' } }
+
+validator.validField('int', {int: '不是整数'});
+// { a: { valid: false, message: '不是正确的整数格式', type: 'base' } }
+
+validator.validField('number', {int: '123.23'});
+// { number: { valid: true, message: null, type: 'base' } }
+
+validator.validField('pro', {pro: '0'});
+// { pro: { valid: false, message: 'pro不能为0', type: 'base' } }
+
+rule = {
+  rules: {
+    int: {
+      type: 'int'
+    },
+    number: {
+      type: 'number'
+    },
+  },
+  combineRules: [{
+    refs: ['int', 'number'],
+    valid: {
+      valid: 'equal',
+      message: 'int必须等于number'
+    }
+  }]
+}
+
+validator = new Validator(rule);
+//全部验证
+validator.valid({int: '不是number', number: '0'});
+// { int: { valid: false, message: '不是正确的整数格式', type: 'base' },
+//   number: { valid: true, message: null, type: 'base' } }
+
+validator.valid({int: 1, number: 2});
+// { int: { valid: true, message: null, type: 'base' },
+//   number: { valid: false, message: 'int必须等于number', type: 'combine' } }
+
+validator.valid({int: 1, number: '1'});
+// { int: { valid: true, message: null, type: 'base' },
+//   number: { valid: false, message: 'c必须大于d.b', type: 'combine' } }
+
+
+
+
+rule = {
+  rules: {
+    async: {
+      validAsync(prop, next, parent, data){
+        setTimeout(()=>{
+          if(prop != '哈哈'){
+            next('prop需要叫哈哈');
+          }
+          next(true);
+        }, 50);
+      }
+    }
+  }
+}
+
+validator = new Validator(rule);
+//全部验证
+validator.validField('async', {async: '呵呵'}, (result)=>{
+// result：
+// { async:
+//    { valid: false,
+//      message: 'prop需要叫哈哈',
+//      type: 'async',
+//      loading: false } }
+});
+// { async: { valid: true, message: null, type: 'base', loading: true }}
+
+```
