@@ -21,8 +21,8 @@ module.exports = function (Validator) {
     int: ["a1"]
   });
   let data = { a: 'a', b: '', a1: '', b1: 'a' };
-  let requireError = { valid: false, message: baseValids.required.message };
-  let success = { valid: true, message: null };
+  let requireError = { valid: false, message: baseValids.required.message, type: "base" };
+  let success = { valid: true, message: null, type: "base" };
   describe('非空验证', function () {
     it('validator非空: 空值', function () {
       expect(v.validField('a', { a: 'a' })).to.deep.equal({ a: success });
@@ -42,11 +42,11 @@ module.exports = function (Validator) {
     });
 
     it('validator基础int验证: float', function () {
-      expect(v.validField('b1', { b1: '2.4' })).to.deep.equal({ b1: { valid: false, message: typeValids.int.message } });
+      expect(v.validField('b1', { b1: '2.4' })).to.deep.equal({ b1: { valid: false, message: typeValids.int.message, type: "base" } });
     });
 
     it('validator基础int验证: string', function () {
-      expect(v.validField('b1', { b1: 'a' })).to.deep.equal({ b1: { valid: false, message: typeValids.int.message } });
+      expect(v.validField('b1', { b1: 'a' })).to.deep.equal({ b1: { valid: false, message: typeValids.int.message, type: "base" } });
     });
 
     it('validator基础int验证: negative', function () {
@@ -74,7 +74,7 @@ module.exports = function (Validator) {
     });
 
     it('validator基础number验证: string', function () {
-      expect(numValid.validField('b', { b: 'a' })).to.deep.equal({ b: { valid: false, message: typeValids.number.message } });
+      expect(numValid.validField('b', { b: 'a' })).to.deep.equal({ b: { valid: false, message: typeValids.number.message, type: "base" } });
     });
 
     it('validator基础number验证: date', function () {
@@ -102,7 +102,7 @@ module.exports = function (Validator) {
     email: ['b']
   });
 
-  var emailError = { valid: false, message: typeValids.email.message };
+  var emailError = { valid: false, message: typeValids.email.message, type: "base" };
 
   describe('类型验证:email', function () {
     it('email定义初始化', function () {
@@ -138,7 +138,7 @@ module.exports = function (Validator) {
     url: ['b']
   });
 
-  var urlError = { valid: false, message: typeValids.url.message };
+  var urlError = { valid: false, message: typeValids.url.message, type: "base" };
 
   describe('类型验证:url', function () {
     it('url定义初始化', function () {
@@ -181,7 +181,7 @@ module.exports = function (Validator) {
     tel: ['b']
   });
 
-  var telError = { valid: false, message: typeValids.tel.message };
+  var telError = { valid: false, message: typeValids.tel.message, type: "base" };
 
   describe('类型验证:tel', function () {
     it('tel定义初始化', function () {
@@ -221,7 +221,7 @@ module.exports = function (Validator) {
     mobile: ['b']
   });
 
-  var mobileError = { valid: false, message: typeValids.mobile.message };
+  var mobileError = { valid: false, message: typeValids.mobile.message, type: "base" };
 
   describe('类型验证:mobile', function () {
     it('mobile定义初始化', function () {
@@ -252,7 +252,7 @@ module.exports = function (Validator) {
     globalmobile: ['b']
   });
 
-  var globalError = { valid: false, message: typeValids.globalmobile.message };
+  var globalError = { valid: false, message: typeValids.globalmobile.message, type: "base" };
 
   describe('类型验证:globalmobile', function () {
     it('globalmobile定义初始化', function () {
@@ -286,11 +286,11 @@ module.exports = function (Validator) {
   describe('基础验证:min max', function () {
 
     it('validator基础min max验证: min', function () {
-      expect(minMaxValid.validField('b', { b: '1.3' })).to.deep.equal({ b: { valid: false, message: "字段不能小于12" } });
+      expect(minMaxValid.validField('b', { b: '1.3' })).to.deep.equal({ b: { valid: false, message: "不能小于12", type: 'base' } });
     });
 
     it('validator基础min max验证: max', function () {
-      expect(minMaxValid.validField('b', { b: 13400000001 })).to.deep.equal({ b: { valid: false, message: "字段不能大于23" } });
+      expect(minMaxValid.validField('b', { b: 13400000001 })).to.deep.equal({ b: { valid: false, message: "不能大于23", type: 'base' } });
     });
 
     it('validator基础min max验证: 正确数值', function () {
@@ -312,11 +312,11 @@ module.exports = function (Validator) {
   describe('基础验证:minLen maxLen', function () {
 
     it('validator基础minLen maxLen验证: minLen', function () {
-      expect(minMaxLenValid.validField('b', { b: '123' })).to.deep.equal({ b: { valid: false, message: "字段长度不能小于10" } });
+      expect(minMaxLenValid.validField('b', { b: '123' })).to.deep.equal({ b: { valid: false, message: "文字长度不能少于10个字", type: "base" } });
     });
 
     it('validator基础minLen maxLen验证: maxLen', function () {
-      expect(minMaxLenValid.validField('b', { b: '134000000011340000000113400000001' })).to.deep.equal({ b: { valid: false, message: "字段长度不能大于23" } });
+      expect(minMaxLenValid.validField('b', { b: '134000000011340000000113400000001' })).to.deep.equal({ b: { valid: false, message: "文字长度不能超过23个字", type: "base" } });
     });
 
     it('validator基础minLen maxLen验证: 正确数值', function () {
@@ -389,65 +389,71 @@ module.exports = function (Validator) {
     }]
   });
 
-  describe('valid验证', function () {
+  let combineSuccess = {type: "combine", valid: true, message: null};
 
-    it('validator基础valid验证: valid', function () {
-      expect(combineValid.validField('b', { b: '22' })).to.deep.equal({ b: { valid: false, message: "b的值不等于15" } });
+  describe('combine valid验证', function () {
+
+    it('validator基础valid验证: valid1', function () {
+      expect(combineValid.validField('b', { b: '22' })).to.deep.equal({ b: { valid: false, message: "b的值不等于15", type: 'base' } });
     });
 
-    it('validator基础valid验证: valid', function () {
-      expect(combineValid.validField('b', { b: '15' })).to.deep.equal({ b: success });
+    it('validator基础valid验证: combine0', function () {
+      expect(combineValid.validField('b', { b: '15', c: 15 })).to.deep.equal({ b: { valid: false, message: "a和b的值不一致", type: 'combine' } });
     });
 
     it('validator基础valid验证: lessThan', function () {
-      expect(combineValid.validField('c', { c: '166', d: { a: '23'}})).to.deep.equal({ c: success, 'd.a': { valid: false, message: "c必须小于d.a" } });
+      expect(combineValid.validField('c', { c: '166', d: { a: '23'}})).to.deep.equal({ c: success, 'd.a': { valid: false, message: "c必须小于d.a", type: 'combine' }, 'd.b': { valid: false, message: "c必须大于d.b", type: 'combine' } });
     });
 
     it('validator基础valid验证: greaterThan', function () {
-      expect(combineValid.validField('c', { c: '15', d: { b: '16'}})).to.deep.equal({ c: success, 'd.b': { valid: false, message: "c必须大于d.b" } });
+      expect(combineValid.validField('c', { c: '15', d: { b: '16'}})).to.deep.equal({ c: success, 'd.b': { valid: false, message: "c必须大于d.b", type: 'combine' }, 'd.a': { valid: false, message: "c必须小于d.a", type: 'combine' } });
     });
 
     it('validator基础valid验证: combine1', function () {
-      expect(combineValid.validField('b', { b: '15', a: '14' })).to.deep.equal({ b: { valid: false, message: "a和b的值不一致" } });
+      expect(combineValid.validField('b', { b: '15', a: '14', c: 15 })).to.deep.equal({ b: { valid: false, message: "a和b的值不一致", type: 'combine' } });
     });
 
     it('validator基础valid验证: combine2', function () {
-      expect(combineValid.validField('b', { b: '15', a: 13400000001 })).to.deep.equal({ b: success });
+      expect(combineValid.validField('b', { b: '15', a: 13400000001 })).to.deep.equal({ b: { valid: false, message: "c和b的值不一致", type: 'combine' } });
     });
 
     it('validator基础valid验证: combine3', function () {
-      expect(combineValid.validField('a', { b: '15', a: '14' })).to.deep.equal({ b: { valid: false, message: "a和b的值不一致" }, a: success });
+      expect(combineValid.validField('a', { b: '15', a: '14' })).to.deep.equal({ b: { valid: false, message: "a和b的值不一致", type: 'combine' }, a: success });
     });
 
     it('validator基础valid验证: combine4', function () {
-      expect(combineValid.validField('b', { b: '15', a: '15', c: 1 })).to.deep.equal({ b: { valid: false, message: "c和b的值不一致" } });
+      expect(combineValid.validField('b', { b: '15', a: '15', c: 1 })).to.deep.equal({ b: { valid: false, message: "c和b的值不一致", type: 'combine' } });
     });
 
     it('validator基础valid验证: combine5', function () {
-      expect(combineValid.validField('b', { b: '15', a: '15', c: "ad" })).to.deep.equal({ b: success });
+      expect(combineValid.validField('b', { b: '15', a: '15', c: "ad" })).to.deep.equal({ b: combineSuccess });
     });
 
     it('validator基础valid验证: combine6', function () {
-      expect(combineValid.validField('b', { b: '15', a: '15', c: 15 })).to.deep.equal({ b: success });
+      expect(combineValid.validField('b', { b: '15', a: '15', c: 15 })).to.deep.equal({ b: combineSuccess });
     });
 
     it('validator基础valid验证: combine7', function () {
-      expect(combineValid.validField('d.a', { d: { b: '15', a: '14' } })).to.deep.equal({ 'd.a': success, 'd.b': { valid: false, message: 'd.a和d.b的值不一致' } });
+      expect(combineValid.validField('d.a', { d: { b: '15', a: '14' } })).to.deep.equal({ 'd.a': { valid: false, message: 'c必须小于d.a', type: 'combine' }, 'd.b': { valid: false, message: 'd.a和d.b的值不一致', type: 'combine' } });
     });
+
+  });
+
+  describe('Async valid验证', function () {
 
     it('validator基础validAsync验证: 异步1', function (done) {
       expect(combineValid.validField('id', { id: '14' }, (result) => {
-        expect(result).to.deep.equal({ id: { valid: true, message: null, loading: false } });
+        expect(result).to.deep.equal({ id: { valid: true, message: null, loading: false, type: "async" } });
         done();
-      })).to.deep.equal({ id: { valid: true, message: null, loading: true } });
+      })).to.deep.equal({ id: { valid: true, message: null, loading: true, type: "base" } });
     });
 
     it('validator基础validAsync验证: 异步2', function (done) {
       let result = combineValid.validField('id', { id: '15' }, (result) => {
-        expect(result).to.deep.equal({ id: { valid: false, message: "id已存在", loading: false } });
+        expect(result).to.deep.equal({ id: { valid: false, message: "id已存在", loading: false, type: "async" } });
         done();
       });
-      expect(result).to.deep.equal({ id: { valid: true, message: null, loading: true } });
+      expect(result).to.deep.equal({ id: { valid: true, message: null, loading: true, type: "base" } });
     });
 
   });
