@@ -247,11 +247,11 @@ validator.validField('async', {async: '呵呵'}, (result)=>{
 });
 
 //全部验证
-validator.valid({async: '呵呵', async2: '呵呵'}, (result)=>{
+validator.valid({async: '呵呵', async2: '呵呵'}, (result) => {
+  // 每一个异步验证执行完毕的时候都调用
+}, (result)=>{
   // 当所有的异步验证都执行完毕的时候调用
   // 所有验证的result
-}, (result) => {
-  // 每一个异步验证执行完毕的时候调用
 });
 
 ```

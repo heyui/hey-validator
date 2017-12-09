@@ -466,7 +466,7 @@ module.exports = function (Validator) {
     });
 
     it('validator基础validAsync验证: 异步集成', function (done) {
-      expect(asyncValid.valid({ id1: '14', id2: '14' }, (result) => {
+      expect(asyncValid.valid({ id1: '14', id2: '14' }, null, (result) => {
         expect(result).to.deep.equal({ 
           id1: { valid: true, message: null, loading: false, type: "async" },
           id2: { valid: true, message: null, loading: false, type: "async" },
