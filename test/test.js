@@ -451,17 +451,17 @@ module.exports = function (Validator) {
       }
     });
     it('validator基础validAsync验证: 异步1', function (done) {
-      expect(asyncValid.validField('id1', { id1: '14' }, (result) => {
+      expect(asyncValid.validField('id1', { id1: '14' }, { next: (result) => {
         expect(result).to.deep.equal({ id1: { valid: true, message: null, loading: false, type: "async" } });
         done();
-      })).to.deep.equal({ id1: { valid: true, message: null, loading: true, type: "base" } });
+      }})).to.deep.equal({ id1: { valid: true, message: null, loading: true, type: "base" } });
     });
 
     it('validator基础validAsync验证: 异步2', function (done) {
-      let result = asyncValid.validField('id1', { id1: '15' }, (result) => {
+      let result = asyncValid.validField('id1', { id1: '15' }, { next: (result) => {
         expect(result).to.deep.equal({ id1: { valid: false, message: "id1已存在", loading: false, type: "async" } });
         done();
-      });
+      }});
       expect(result).to.deep.equal({ id1: { valid: true, message: null, loading: true, type: "base" } });
     });
 
