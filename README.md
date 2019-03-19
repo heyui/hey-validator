@@ -1,4 +1,5 @@
 # validator
+
 Validate Form Data.
 
 ## Install
@@ -8,6 +9,7 @@ npm install -S hey-validator
 ```
 
 ## API
+
 ```js
 
 new Valid({
@@ -46,10 +48,10 @@ new Valid({
             }
         },
         "d.b":{
-            
+
         },
         "e[].a":{
-            
+
         }
     },
     combineRules:[{
@@ -88,8 +90,8 @@ new Valid({
 
 ```
 
-
 ## Define Valid Function
+
 ```js
 func(prop, value){
     return true;
@@ -99,159 +101,165 @@ func(prop, value){
 ```
 
 ## Define Global Valid
+
 ```js
-
 Valid.config({
-    valids:{
-      test(prop, parent, data){
-        if(condition){
-          return true;
-        }
-        return '';
-      },
-      test2:{
-        pattern: /^[0-9a]+$/,
-        message: '不符合自定义要求'
+  valids: {
+    test(prop, parent, data) {
+      if (condition) {
+        return true
       }
+      return ""
     },
-    combineValids:{
-      test(value1, value2){
-        if(condition){
-          return true;
-        }
-        return ''
-      }
+    test2: {
+      pattern: /^[0-9a]+$/,
+      message: "不符合自定义要求"
     }
+  },
+  combineValids: {
+    test(value1, value2) {
+      if (condition) {
+        return true
+      }
+      return ""
+    }
+  }
 })
-
 ```
 
 ## Usage
 
 ### type
-```js
 
+```js
 let rule = {
   rules: {
     int: {
-      type: 'int'
+      type: "int"
     },
     number: {
-      type: 'number'
+      type: "number"
     },
     url: {
-      type: 'url'
+      type: "url"
     },
     pro: {
-      valid(prop, parent, data){
-        if(prop == '0'){
-          return "pro不能为0";
+      valid(prop, parent, data) {
+        if (prop == "0") {
+          return "pro不能为0"
         }
-        return true;
+        return true
       }
     }
   },
-  required: ['int']
+  required: ["int"]
 }
-let validator = new Validator(rule);
+let validator = new Validator(rule)
 //部分验证
-validator.validField('int', {int: ''});
+validator.validField("int", { int: "" })
 // { a: { valid: false, message: '不能为空', type: 'base' } }
 
-validator.validField('int', {int: '不是整数'});
+validator.validField("int", { int: "不是整数" })
 // { a: { valid: false, message: '不是正确的整数格式', type: 'base' } }
 
-validator.validField('number', {int: '123.23'});
+validator.validField("number", { int: "123.23" })
 // { number: { valid: true, message: null, type: 'base' } }
 
-validator.validField('pro', {pro: '0'});
+validator.validField("pro", { pro: "0" })
 // { pro: { valid: false, message: 'pro不能为0', type: 'base' } }
 ```
 
-
 ### combine
-```js
 
+```js
 let rule = {
   rules: {
     int: {
-      type: 'int'
+      type: "int"
     },
     number: {
-      type: 'number'
-    },
-  },
-  combineRules: [{
-    refs: ['int', 'number'],
-    valid: {
-      valid: 'equal',
-      message: 'int必须等于number'
+      type: "number"
     }
-  }]
+  },
+  combineRules: [
+    {
+      refs: ["int", "number"],
+      valid: {
+        valid: "equal",
+        message: "int必须等于number"
+      }
+    }
+  ]
 }
 
-let validator = new Validator(rule);
+let validator = new Validator(rule)
 //全部验证
-validator.valid({int: '不是number', number: '0'});
+validator.valid({ int: "不是number", number: "0" })
 // { int: { valid: false, message: '不是正确的整数格式', type: 'base' },
 //   number: { valid: true, message: null, type: 'base' } }
 
-validator.valid({int: 1, number: 2});
+validator.valid({ int: 1, number: 2 })
 // { int: { valid: true, message: null, type: 'base' },
 //   number: { valid: false, message: 'int必须等于number', type: 'combine' } }
 
-validator.valid({int: 1, number: '1'});
+validator.valid({ int: 1, number: "1" })
 // { int: { valid: true, message: null, type: 'base' },
 //   number: { valid: false, message: 'c必须大于d.b', type: 'combine' } }
-
-
 ```
 
-
 ### async
-```js
 
+```js
 let rule = {
   rules: {
     async: {
-      validAsync(prop, next, parent, data){
-        setTimeout(()=>{
-          if(prop != '哈哈'){
-            next('prop需要叫哈哈');
+      validAsync(prop, next, parent, data) {
+        setTimeout(() => {
+          if (prop != "哈哈") {
+            next("prop需要叫哈哈")
           }
-          next(true);
-        }, 50);
+          next(true)
+        }, 50)
       }
     },
     async2: {
-      validAsync(prop, next, parent, data){
-        setTimeout(()=>{
-          if(prop == '哈哈'){
-            next('prop不需要叫哈哈');
+      validAsync(prop, next, parent, data) {
+        setTimeout(() => {
+          if (prop == "哈哈") {
+            next("prop不需要叫哈哈")
           }
-          next(true);
-        }, 50);
+          next(true)
+        }, 50)
       }
     }
   }
 }
 
-let validator = new Validator(rule);
+let validator = new Validator(rule)
 //部分验证
-validator.validField('async', {async: '呵呵'}, (result)=>{
-  // { async:
-  //    { valid: false,
-  //      message: 'prop需要叫哈哈',
-  //      type: 'async',
-  //      loading: false } }
-});
+validator.validField(
+  "async",
+  { async: "呵呵" },
+  {
+    next: result => {
+      // { async:
+      //    { valid: false,
+      //      message: 'prop需要叫哈哈',
+      //      type: 'async',
+      //      loading: false } }
+    }
+  }
+)
 
 //全部验证
-validator.valid({async: '呵呵', async2: '呵呵'}, (result) => {
-  // 每一个异步验证执行完毕的时候都调用
-}, (result)=>{
-  // 当所有的异步验证都执行完毕的时候调用
-  // 所有验证的result
-});
-
+validator.valid(
+  { async: "呵呵", async2: "呵呵" },
+  result => {
+    // 每一个异步验证执行完毕的时候都调用
+  },
+  result => {
+    // 当所有的异步验证都执行完毕的时候调用
+    // 所有验证的result
+  }
+)
 ```
