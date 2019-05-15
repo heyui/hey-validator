@@ -10,7 +10,7 @@ npm install -S hey-validator
 
 ## 文档
 
-### 参数
+### 初始化参数
 ```js
 {
   rules: {},          // 单个数据验证
@@ -25,7 +25,9 @@ npm install -S hey-validator
   globalmobile:[]     // 国际号码
 }
 ```
-示例：
+## 示例
+
+### 基础示例
 ```html
   <Form :model="model" :rules="validRules" ref="form">
     <FormItem label="金额" props="amount">
@@ -78,7 +80,7 @@ tel           // 电话号码
 mobile        // 手机号
 globalmobile  // 国际号码
 ```
-示例：判断是否是数字
+#### 示例1
 ```html
   <Form :model="model" :rules="rules" ref="form">
     <FormItem label="金额" props="amount">
@@ -103,8 +105,7 @@ globalmobile  // 国际号码
   // 当输入字符串的结果
   {amount: 'a'}   // {a:{message: '不是正确的数字格式', type: 'base', valid: false}}
 ```
-
-示例：判断是否是手机号码
+#### 示例2
 ```html
   <Form :model="model" :rules="rules" ref="form">
     <FormItem label="金额" props="mobile">
@@ -132,7 +133,7 @@ globalmobile  // 国际号码
   {mobile: 123}   // {a:{message: '不是正确的手机号码格式', type: 'base', valid: false}}
 ```
 
-基础属性
+### 基础校验
 ```js
   required    // 是否必填
   maxLen      // 最大长度
@@ -140,7 +141,7 @@ globalmobile  // 国际号码
   max         // 最大值
   min         // 最小值 
 ``` 
-示例：最大长度
+#### 示例：最大长度
 ```html
   <Form :model="model" :rules="rules" ref="form">
     <FormItem label="长度测试" props="length">
@@ -164,7 +165,7 @@ globalmobile  // 国际号码
   // 长度验证结果
   {length: 'aaaaaa'}   // {a:{message: '文字长度不能超过5个字', type: 'base', valid: false}}
 ```
-示例：最大值
+#### 示例：最大值
 ```html
   <Form :model="model" :rules="rules" ref="form">
     <FormItem label="最大值" props="max">
@@ -190,7 +191,9 @@ globalmobile  // 国际号码
   {max: 99}   // {a:{message: '不能大于9', type: 'base', valid: false}}
 ```
 
-自定义验证方式
+### 自定义验证方式
+
+#### 示例1：正则表达式校验
 ```html
   <Form :model="model" :rules="rules" ref="form">
     <FormItem label="数字" props="number">
@@ -221,7 +224,7 @@ globalmobile  // 国际号码
   {number: 100}    // {a:{message: '不能大于99', type: 'base', valid: false}}
 ```
 
-使用原生valid进行验证
+#### 示例2：使用valid方法进行验证
 ```html
   <Form :model="model" :rules="rules" ref="form">
     <FormItem label="valid" props="valid">
@@ -250,7 +253,7 @@ globalmobile  // 国际号码
   // 原生valid验证
   {valid: -1}  // {a:{message: '必须介于0至100之间', type: 'base', valid: false}}
 ```
-异步validAsync验证
+### 异步validAsync验证
 ```html
   <Form :model="model" :rules="rules" ref="form">
     <FormItem label="validAsync" props="validAsync">
@@ -286,7 +289,10 @@ globalmobile  // 国际号码
   // {a:{message: '必须介于0至100之间', type: 'base', valid: false}}
 ```
 
-多个数据合并验证
+### 多个数据合并验证
+补充说明：多个数据是指combineRules对象中的refs属性中的数据，valid方法中的参数一次代表refs中的参数，顺序保持一致。
+
+#### 示例1
 ```html
   <Form :model="model" :rules="rules" ref="form">
     <FormItem label="数据b" props="b">
@@ -319,7 +325,7 @@ globalmobile  // 国际号码
   // 合并验证，这里需要注意的是默认会报错在最后一个数据，也就是会在页面上对应数据的地方报错提醒
   {b: 3, c:2}   // {b:{message: null, type: "base", valid: true}} {c: {message: "b不能大于c", type: "combine", valid: false}}
 ```
-子级数据验证
+#### 示例2：子级数据验证
 ```js
   data() {
     return {
@@ -350,7 +356,7 @@ globalmobile  // 国际号码
   // e[1].c: {message: "b不能大于c", type: "combine", valid: false}
 ```
 
-内置合并验证规则
+#### 示例3：内置合并验证规则
 ```js
   // lessThan b小于c
   // greaterThan b大于c
@@ -364,11 +370,91 @@ globalmobile  // 国际号码
   }
 ```
 
+### 方法
+方法名 | 说明 | 参数 | 返回值  
+-|-|-|-
+valid | 校验方法 | data,next:Function,allNext:Function | 无
+getConfig | 获取相关配置 | prop | 对应数据的校验配置
+setConfig | 设置相关配置 | prop, options | 无
+validField | 校验部分数据 | prop,data,next:Function | 校验结果
+destroy | 销毁实例 | 无 | 无
 
+#### valid
+```js
+  import HeyValidator from "hey-validator"
+  let validator = new HeyValidator({
+    required: ['b'],
+    rules:{
+      b: {
+        type:'int'
+      }
+    }
+  })
+  
+  validator.valid({b: 3.3})   // {b: {message: "不是正确的整数格式", type: "base", valid: false}}}
+  // next     异步校验只有执行的回调
+  // allNext  多个异步校验全部完成之后执行的回调
+```
 
+#### getConfig
+```js
+  let HeyValidator = require("hey-validator")
+  let validator = new HeyValidator({
+    required: ['b'],
+    rules:{
+        b: {
+            type:'int'
+        }
+    }
+  })
+  validator.getConfig('b')   // {required: true, type: "int"}
+```
 
+#### setConfig
+```js
+  let HeyValidator = require("hey-validator")
+  let validator = new HeyValidator({
+    required: ['b'],
+  })
+  let rules = {
+    b: {
+      type:'int'
+    }
+  }
+  validator.setConfig('b',rules);
+  validator.getConfig('b')  // {b: {type: "int"}, required: true}
+```
 
+#### validField
+```js
+  let HeyValidator = require("hey-validator")
+  let validator = new HeyValidator({
+    required: ['b','c'],
+    rules:{
+      b: {
+        type: 'int'
+      },
+      c: {
+        type: 'email'
+      }
+    }
+  })
+  validator.validField('b', { b: 3.3 })  // {b: {message: "不是正确的整数格式", type: "base", valid: false}}
+``` 
 
+#### destroy
+```js
+  let HeyValidator = require("hey-validator")
+  let validator = new HeyValidator({
+    required: ['b','c'],
+    rules:{
+      b: {
+        type: 'int'
+      }
+    }
+  })
+  validator.destroy()   //{combineRuleResults: null, combineRules: null, rules: null}
+```
 
 
 
