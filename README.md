@@ -1,11 +1,11 @@
-# validator
+# Validator
 
-Validate Form Data.
+`hey-validator`是配合`heyui`使用的表单数据验证插件，其中集成了常用且多样化的校验方式，包含单个数据校验和多个数据校验，均可进行自定义校验规则，扩展性极强，帮助你解决绝大部分表单验证情况，快速完成应用开发。
 
-## Install
+## 安装
 
 ```sh
-npm install -S hey-validator
+npm install --save hey-validator
 ```
 
 ## 文档
@@ -144,8 +144,8 @@ globalmobile  // 国际号码
 #### 示例：最大长度
 ```html
   <Form :model="model" :rules="rules" ref="form">
-    <FormItem label="长度测试" props="length">
-      <input type="text" v-model="model.length">
+    <FormItem label="长度测试" props="a">
+      <input type="text" v-model="model.a">
     </FormItem>
   </Form>
 ```
@@ -153,23 +153,23 @@ globalmobile  // 国际号码
   data() {
     return {
       model: {
-        length: null
+        a: null
       },
       rules:{
-        length: {
+        a: {
           maxLen: 5
         }
       }
     }
   }
   // 长度验证结果
-  {length: 'aaaaaa'}   // {a:{message: '文字长度不能超过5个字', type: 'base', valid: false}}
+  {a: 'aaaaaa'}   // {a:{message: '文字长度不能超过5个字', type: 'base', valid: false}}
 ```
 #### 示例：最大值
 ```html
   <Form :model="model" :rules="rules" ref="form">
-    <FormItem label="最大值" props="max">
-      <input type="text" v-model="model.max">
+    <FormItem label="最大值" props="a">
+      <input type="text" v-model="model.a">
     </FormItem>
   </Form>
 ```
@@ -177,10 +177,10 @@ globalmobile  // 国际号码
   data() {
     return {
       model: {
-        max: null
+        a: null
       },
       rules:{
-        max: {
+        a: {
           type: 'number',
           max: 9
         }
@@ -188,7 +188,7 @@ globalmobile  // 国际号码
     }
   }
   //最大值验证
-  {max: 99}   // {a:{message: '不能大于9', type: 'base', valid: false}}
+  {a: 99}   // {a:{message: '不能大于9', type: 'base', valid: false}}
 ```
 
 ### 自定义验证方式
@@ -196,8 +196,8 @@ globalmobile  // 国际号码
 #### 示例1：正则表达式校验
 ```html
   <Form :model="model" :rules="rules" ref="form">
-    <FormItem label="数字" props="number">
-      <input type="text" v-model="model.number">
+    <FormItem label="数字" props="a">
+      <input type="text" v-model="model.a">
     </FormItem>
   </Form>
 ```
@@ -205,10 +205,10 @@ globalmobile  // 国际号码
   data() {
     return {
       model: {
-        number: null
+        a: null
       },
       rules:{
-        number: {
+        a: {
           valid: {
             pattern: /^[0-9]+$/,
             message: '请输入正确的数字格式'
@@ -219,16 +219,16 @@ globalmobile  // 国际号码
     }
   }
   // 数字格式验证
-  {number: 'a'})   // {a:{message: '请输入正确的数字格式', type: 'base', valid: false}}
+  {a: 'a'})   // {a:{message: '请输入正确的数字格式', type: 'base', valid: false}}
   //最大值验证
-  {number: 100}    // {a:{message: '不能大于99', type: 'base', valid: false}}
+  {a: 100}    // {a:{message: '不能大于99', type: 'base', valid: false}}
 ```
 
 #### 示例2：使用valid方法进行验证
 ```html
   <Form :model="model" :rules="rules" ref="form">
-    <FormItem label="valid" props="valid">
-      <input type="text" v-model="model.valid">
+    <FormItem label="valid" props="a">
+      <input type="text" v-model="model.a">
     </FormItem>
   </Form>
 ```
@@ -236,10 +236,10 @@ globalmobile  // 国际号码
   data() {
     return {
       model: {
-        valid: null
+        a: null
       },
       rules:{
-        valid: {
+        a: {
           type: 'number',
           valid(prop, parent, data) {
             if(prop< 0 || prop > 100) {
@@ -251,13 +251,13 @@ globalmobile  // 国际号码
     }
   }
   // 原生valid验证
-  {valid: -1}  // {a:{message: '必须介于0至100之间', type: 'base', valid: false}}
+  {a: -1}  // {a:{message: '必须介于0至100之间', type: 'base', valid: false}}
 ```
 ### 异步validAsync验证
 ```html
   <Form :model="model" :rules="rules" ref="form">
-    <FormItem label="validAsync" props="validAsync">
-      <input type="text" v-model="model.validAsync">
+    <FormItem label="validAsync" props="a">
+      <input type="text" v-model="model.a">
     </FormItem>
   </Form>
 ```
@@ -265,10 +265,10 @@ globalmobile  // 国际号码
   data() {
     return {
       model: {
-        validAsync: null
+        a: null
       },
       rules:{
-        validAsync: {
+        a: {
           type: 'number',
           validAsync(prop, next, parent , data){
             $.ajax('/test').then((resp)){
@@ -290,7 +290,7 @@ globalmobile  // 国际号码
 ```
 
 ### 多个数据合并验证
-补充说明：多个数据是指combineRules对象中的refs属性中的数据，valid方法中的参数一次代表refs中的参数，顺序保持一致。
+补充说明：多个数据是指`combineRules`对象中的`refs`属性中的数据，`valid`方法中的参数依次代表`refs`中的参数，顺序保持一致。
 
 #### 示例1
 ```html
@@ -370,7 +370,7 @@ globalmobile  // 国际号码
   }
 ```
 
-### 方法
+## 方法
 方法名 | 说明 | 参数 | 返回值  
 -|-|-|-
 valid | 校验方法 | data,next:Function,allNext:Function | 无
@@ -456,6 +456,9 @@ destroy | 销毁实例 | 无 | 无
   validator.destroy()   //{combineRuleResults: null, combineRules: null, rules: null}
 ```
 
+## 相关链接
+
+- [HeyUI](https://www.heyui.top)
 
 
 
