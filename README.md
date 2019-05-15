@@ -8,258 +8,454 @@ Validate Form Data.
 npm install -S hey-validator
 ```
 
-## API
+## 文档
 
+### 初始化参数
 ```js
+{
+  rules: {},          // 单个数据验证
+  combineRules: {},   // 多个数据合并验证
+  required:[],        // 是否必填
+  int:[],             // 整数
+  number:[],          // 数字
+  email:[],           // 邮箱
+  url:[],             // 网址
+  tel:[],             // 电话号码
+  mobile:[],          // 手机号
+  globalmobile:[]     // 国际号码
+}
+```
+## 示例
 
-new Valid({
-    rules:{
-        a:{
-            type: 'int|number|email|url|tel|mobile|globalmobile', //可以自定义
-            required: true,
-            maxLen: 1000,
-            minLen: 2
+### 基础示例
+```html
+  <Form :model="model" :rules="validRules" ref="form">
+    <FormItem label="金额" props="amount">
+      <input type="text" v-model="model.amount">
+    </FormItem>
+    <FormItem label="网址" props="url">
+      <input type="text" v-model="model.url">
+    </FormItem>
+    <FormItem label="邮箱" props="email">
+      <input type="text" v-model="model.email">
+    </FormItem>
+    <FormItem label="手机" props="mobile">
+      <input type="text" v-model="model.mobile">
+    </FormItem>
+  </Form>
+```
+```js
+  data() {
+    return {
+      model: {
+        amount: null,
+        url: null,
+        email: null,
+        mobile: null
+      },
+      validRules: {
+        required: ['amount', 'url', 'email', 'mobile'],
+        // 可以这样用
+        rules: {
+          amount: {
+            type: 'number'
+          }
         },
-        b:{
-            valid: {
-              pattern: /^[0-9]+$/,
-              message: "请输入正确的数字格式"
-            },
-            required: true,
-            min: 1,
-            max: 5
-        },
-        c:{
-            required: true,
-            type: 'int',
-            valid(prop, parent, data){
-              if(resp.isExsit){
-                return "错误";
-              }
-              return true;
-            },
-            validAsync(prop, next, parent , data){
-              $.ajax('/test').then((resp)){
-                if(resp.isExsit){
-                  next("已存在");
-                }
-                next();
-              }
+        // 也可以这样
+        url: ['url'],
+        email: ['email'],
+        mobile: ['mobile']
+      }
+    }
+  }
+```
+
+### 内置基础类型验证
+```js
+int           // 整数
+number        // 数字
+email         // 邮箱
+url           // 网址
+tel           // 电话号码
+mobile        // 手机号
+globalmobile  // 国际号码
+```
+#### 示例1
+```html
+  <Form :model="model" :rules="rules" ref="form">
+    <FormItem label="金额" props="amount">
+      <input type="text" v-model="model.amount">
+    </FormItem>
+  </Form>
+```
+```js
+  data() {
+    return {
+      model: {
+        amount: null
+      },
+      rules:{
+        amount: {
+          type: 'number',
+          required: true
+        }
+      }
+    }
+  }
+  // 当输入字符串的结果
+  {amount: 'a'}   // {a:{message: '不是正确的数字格式', type: 'base', valid: false}}
+```
+#### 示例2
+```html
+  <Form :model="model" :rules="rules" ref="form">
+    <FormItem label="金额" props="mobile">
+      <input type="text" v-model="model.mobile">
+    </FormItem>
+  </Form>
+```
+```js
+  data() {
+    return {
+      model: {
+        mobile: null
+      },
+      rules:{
+        mobile: {
+          type: 'mobile',
+          required: true
+        }
+      }
+    }
+  }
+  //空验证
+  {mobile: ''}    // {a:{message: '不能为空', type: 'base', valid: false}}
+  //手机号码格式验证
+  {mobile: 123}   // {a:{message: '不是正确的手机号码格式', type: 'base', valid: false}}
+```
+
+### 基础校验
+```js
+  required    // 是否必填
+  maxLen      // 最大长度
+  minLen      // 最小长度
+  max         // 最大值
+  min         // 最小值 
+``` 
+#### 示例：最大长度
+```html
+  <Form :model="model" :rules="rules" ref="form">
+    <FormItem label="长度测试" props="length">
+      <input type="text" v-model="model.length">
+    </FormItem>
+  </Form>
+```
+```js
+  data() {
+    return {
+      model: {
+        length: null
+      },
+      rules:{
+        length: {
+          maxLen: 5
+        }
+      }
+    }
+  }
+  // 长度验证结果
+  {length: 'aaaaaa'}   // {a:{message: '文字长度不能超过5个字', type: 'base', valid: false}}
+```
+#### 示例：最大值
+```html
+  <Form :model="model" :rules="rules" ref="form">
+    <FormItem label="最大值" props="max">
+      <input type="text" v-model="model.max">
+    </FormItem>
+  </Form>
+```
+```js
+  data() {
+    return {
+      model: {
+        max: null
+      },
+      rules:{
+        max: {
+          type: 'number',
+          max: 9
+        }
+      }
+    }
+  }
+  //最大值验证
+  {max: 99}   // {a:{message: '不能大于9', type: 'base', valid: false}}
+```
+
+### 自定义验证方式
+
+#### 示例1：正则表达式校验
+```html
+  <Form :model="model" :rules="rules" ref="form">
+    <FormItem label="数字" props="number">
+      <input type="text" v-model="model.number">
+    </FormItem>
+  </Form>
+```
+```js
+  data() {
+    return {
+      model: {
+        number: null
+      },
+      rules:{
+        number: {
+          valid: {
+            pattern: /^[0-9]+$/,
+            message: '请输入正确的数字格式'
+          },
+          max: 99
+        }
+      }
+    }
+  }
+  // 数字格式验证
+  {number: 'a'})   // {a:{message: '请输入正确的数字格式', type: 'base', valid: false}}
+  //最大值验证
+  {number: 100}    // {a:{message: '不能大于99', type: 'base', valid: false}}
+```
+
+#### 示例2：使用valid方法进行验证
+```html
+  <Form :model="model" :rules="rules" ref="form">
+    <FormItem label="valid" props="valid">
+      <input type="text" v-model="model.valid">
+    </FormItem>
+  </Form>
+```
+```js
+  data() {
+    return {
+      model: {
+        valid: null
+      },
+      rules:{
+        valid: {
+          type: 'number',
+          valid(prop, parent, data) {
+            if(prop< 0 || prop > 100) {
+                return '必须介于0至100之间'
             }
-        },
-        "d.b":{
-
-        },
-        "e[].a":{
-
-        }
-    },
-    combineRules:[{
-      parentRef: 'e[]', //如果验证的是子集的数据，则需要定义父级
-      refs: ['b', 'c'],
-      valid(valueb,valuec){
-        if(condition){
-          return "b不能大于c";
-        }
-        return true;
-      }
-    },{
-      refs: ['b', 'c'],
-      valid: {
-        valid: 'lessThan', //greaterThan
-        message: "开始时间必须小于结束时间"
-      }
-    },{
-      refs: ['d', 'e'],
-      valid: : {
-        valid: 'equal',
-        message: "两次密码输入必须一致"
-      }
-    }],
-    //可以对一些同一种类型的类型判断集成设定
-    required:['b','c','e','f','e',"d.b","e[].a"],
-    int:['a'],
-    number:['a'],
-    email:['a'],
-    url:['a'],
-    tel:['a'],
-    mobile:['a'],
-    globalmobile:['a'] //国际号码
-});
-
-
-```
-
-## Define Valid Function
-
-```js
-func(prop, value){
-    return true;
-    //或者
-    return "error message";
-}
-```
-
-## Define Global Valid
-
-```js
-Valid.config({
-  valids: {
-    test(prop, parent, data) {
-      if (condition) {
-        return true
-      }
-      return ""
-    },
-    test2: {
-      pattern: /^[0-9a]+$/,
-      message: "不符合自定义要求"
-    }
-  },
-  combineValids: {
-    test(value1, value2) {
-      if (condition) {
-        return true
-      }
-      return ""
-    }
-  }
-})
-```
-
-## Usage
-
-### type
-
-```js
-let rule = {
-  rules: {
-    int: {
-      type: "int"
-    },
-    number: {
-      type: "number"
-    },
-    url: {
-      type: "url"
-    },
-    pro: {
-      valid(prop, parent, data) {
-        if (prop == "0") {
-          return "pro不能为0"
-        }
-        return true
-      }
-    }
-  },
-  required: ["int"]
-}
-let validator = new Validator(rule)
-//部分验证
-validator.validField("int", { int: "" })
-// { a: { valid: false, message: '不能为空', type: 'base' } }
-
-validator.validField("int", { int: "不是整数" })
-// { a: { valid: false, message: '不是正确的整数格式', type: 'base' } }
-
-validator.validField("number", { int: "123.23" })
-// { number: { valid: true, message: null, type: 'base' } }
-
-validator.validField("pro", { pro: "0" })
-// { pro: { valid: false, message: 'pro不能为0', type: 'base' } }
-```
-
-### combine
-
-```js
-let rule = {
-  rules: {
-    int: {
-      type: "int"
-    },
-    number: {
-      type: "number"
-    }
-  },
-  combineRules: [
-    {
-      refs: ["int", "number"],
-      valid: {
-        valid: "equal",
-        message: "int必须等于number"
-      }
-    }
-  ]
-}
-
-let validator = new Validator(rule)
-//全部验证
-validator.valid({ int: "不是number", number: "0" })
-// { int: { valid: false, message: '不是正确的整数格式', type: 'base' },
-//   number: { valid: true, message: null, type: 'base' } }
-
-validator.valid({ int: 1, number: 2 })
-// { int: { valid: true, message: null, type: 'base' },
-//   number: { valid: false, message: 'int必须等于number', type: 'combine' } }
-
-validator.valid({ int: 1, number: "1" })
-// { int: { valid: true, message: null, type: 'base' },
-//   number: { valid: false, message: 'c必须大于d.b', type: 'combine' } }
-```
-
-### async
-
-```js
-let rule = {
-  rules: {
-    async: {
-      validAsync(prop, next, parent, data) {
-        setTimeout(() => {
-          if (prop != "哈哈") {
-            next("prop需要叫哈哈")
           }
-          next(true)
-        }, 50)
-      }
-    },
-    async2: {
-      validAsync(prop, next, parent, data) {
-        setTimeout(() => {
-          if (prop == "哈哈") {
-            next("prop不需要叫哈哈")
-          }
-          next(true)
-        }, 50)
+        }
       }
     }
   }
-}
+  // 原生valid验证
+  {valid: -1}  // {a:{message: '必须介于0至100之间', type: 'base', valid: false}}
+```
+### 异步validAsync验证
+```html
+  <Form :model="model" :rules="rules" ref="form">
+    <FormItem label="validAsync" props="validAsync">
+      <input type="text" v-model="model.validAsync">
+    </FormItem>
+  </Form>
+```
+```js
+  data() {
+    return {
+      model: {
+        validAsync: null
+      },
+      rules:{
+        validAsync: {
+          type: 'number',
+          validAsync(prop, next, parent , data){
+            $.ajax('/test').then((resp)){
+              if(resp.isExsit){
+                next("已存在");
+              }
+              if(resp.value < 0 || resp.value > 100) {
+                next('必须介于0至100之间')
+              }
+              next()
+            }
+          }
+        }
+      }
+    }
+  }
+  // 异步valid
+  // {a:{message: '必须介于0至100之间', type: 'base', valid: false}}
+```
 
-let validator = new Validator(rule)
-//部分验证
-validator.validField(
-  "async",
-  { async: "呵呵" },
+### 多个数据合并验证
+补充说明：多个数据是指combineRules对象中的refs属性中的数据，valid方法中的参数一次代表refs中的参数，顺序保持一致。
+
+#### 示例1
+```html
+  <Form :model="model" :rules="rules" ref="form">
+    <FormItem label="数据b" props="b">
+      <input type="text" v-model="model.b">
+    </FormItem>
+    <FormItem label="数据c" props="c">
+      <input type="text" v-model="model.c">
+    </FormItem>
+  </Form>
+```
+```js
+  data() {
+    return {
+      model: {
+        b: null,
+        c: null
+      },
+      combineRules:[{
+        // parentRef: 'e[]', // 如果验证的是子级的数据，则需要定义父级
+        refs: ['b', 'c'],
+        valid(valueb,valuec){
+          if(valueb > valuec){
+            return "b不能大于c";
+          }
+          return true;
+        }
+      }]
+    }
+  }
+  // 合并验证，这里需要注意的是默认会报错在最后一个数据，也就是会在页面上对应数据的地方报错提醒
+  {b: 3, c:2}   // {b:{message: null, type: "base", valid: true}} {c: {message: "b不能大于c", type: "combine", valid: false}}
+```
+#### 示例2：子级数据验证
+```js
+  data() {
+    return {
+      model: {
+        b: null,
+        c: null
+      },
+      combineRules:[{
+        parentRef: 'e[]', // 如果验证的是子级的数据，则需要定义父级
+        refs: ['b', 'c'],
+        valid(valueb,valuec){
+          if(valueb > valuec){
+            return "b不能大于c";
+          }
+          return true;
+        }
+      }]
+    }
+  }
+  // 合并验证，这里需要注意的是默认会报错在最后一个数据，也就是会在页面上对应数据的地方报错提醒
+  {e:[{b: 1, c:2}, {b: 3, c: 2}]}
+  // e: {message: null, type: "base", valid: true}
+  // e[0]: {message: null, type: "base", valid: true}
+  // e[0].b: {message: null, type: "combine", valid: true}
+  // e[0].c: {message: null, type: "combine", valid: true}
+  // e[1]: {message: null, type: "base", valid: true}
+  // e[1].b: {message: null, type: "base", valid: true}
+  // e[1].c: {message: "b不能大于c", type: "combine", valid: false}
+```
+
+#### 示例3：内置合并验证规则
+```js
+  // lessThan b小于c
+  // greaterThan b大于c
+  // equal b等于c
   {
-    next: result => {
-      // { async:
-      //    { valid: false,
-      //      message: 'prop需要叫哈哈',
-      //      type: 'async',
-      //      loading: false } }
+    refs: ['b', 'c'],
+    valid: {
+      valid: 'lessThan',
+      message: "开始时间必须小于结束时间"
     }
   }
-)
-
-//全部验证
-validator.valid(
-  { async: "呵呵", async2: "呵呵" },
-  result => {
-    // 每一个异步验证执行完毕的时候都调用
-  },
-  result => {
-    // 当所有的异步验证都执行完毕的时候调用
-    // 所有验证的result
-  }
-)
 ```
+
+### 方法
+方法名 | 说明 | 参数 | 返回值  
+-|-|-|-
+valid | 校验方法 | data,next:Function,allNext:Function | 无
+getConfig | 获取相关配置 | prop | 对应数据的校验配置
+setConfig | 设置相关配置 | prop, options | 无
+validField | 校验部分数据 | prop,data,next:Function | 校验结果
+destroy | 销毁实例 | 无 | 无
+
+#### valid
+```js
+  import HeyValidator from "hey-validator"
+  let validator = new HeyValidator({
+    required: ['b'],
+    rules:{
+      b: {
+        type:'int'
+      }
+    }
+  })
+  
+  validator.valid({b: 3.3})   // {b: {message: "不是正确的整数格式", type: "base", valid: false}}}
+  // next     异步校验只有执行的回调
+  // allNext  多个异步校验全部完成之后执行的回调
+```
+
+#### getConfig
+```js
+  let HeyValidator = require("hey-validator")
+  let validator = new HeyValidator({
+    required: ['b'],
+    rules:{
+        b: {
+            type:'int'
+        }
+    }
+  })
+  validator.getConfig('b')   // {required: true, type: "int"}
+```
+
+#### setConfig
+```js
+  let HeyValidator = require("hey-validator")
+  let validator = new HeyValidator({
+    required: ['b'],
+  })
+  let rules = {
+    b: {
+      type:'int'
+    }
+  }
+  validator.setConfig('b',rules);
+  validator.getConfig('b')  // {b: {type: "int"}, required: true}
+```
+
+#### validField
+```js
+  let HeyValidator = require("hey-validator")
+  let validator = new HeyValidator({
+    required: ['b','c'],
+    rules:{
+      b: {
+        type: 'int'
+      },
+      c: {
+        type: 'email'
+      }
+    }
+  })
+  validator.validField('b', { b: 3.3 })  // {b: {message: "不是正确的整数格式", type: "base", valid: false}}
+``` 
+
+#### destroy
+```js
+  let HeyValidator = require("hey-validator")
+  let validator = new HeyValidator({
+    required: ['b','c'],
+    rules:{
+      b: {
+        type: 'int'
+      }
+    }
+  })
+  validator.destroy()   //{combineRuleResults: null, combineRules: null, rules: null}
+```
+
+
+
+
