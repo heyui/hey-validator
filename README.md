@@ -82,7 +82,7 @@ globalmobile  // 国际号码
 ```
 #### 示例1
 ```html
-  <Form :model="model" :rules="rules" ref="form">
+  <Form :model="model" :rules="validRules" ref="form">
     <FormItem label="金额" props="amount">
       <input type="text" v-model="model.amount">
     </FormItem>
@@ -94,10 +94,12 @@ globalmobile  // 国际号码
       model: {
         amount: null
       },
-      rules:{
-        amount: {
-          type: 'number',
-          required: true
+      validRules: {
+        rules:{
+          amount: {
+            type: 'number',
+            required: true
+          }
         }
       }
     }
@@ -107,7 +109,7 @@ globalmobile  // 国际号码
 ```
 #### 示例2
 ```html
-  <Form :model="model" :rules="rules" ref="form">
+  <Form :model="model" :rules="validRules" ref="form">
     <FormItem label="金额" props="mobile">
       <input type="text" v-model="model.mobile">
     </FormItem>
@@ -119,10 +121,12 @@ globalmobile  // 国际号码
       model: {
         mobile: null
       },
-      rules:{
-        mobile: {
-          type: 'mobile',
-          required: true
+      validRules{
+        rules:{
+          mobile: {
+            type: 'mobile',
+            required: true
+          }
         }
       }
     }
@@ -143,7 +147,7 @@ globalmobile  // 国际号码
 ``` 
 #### 示例：最大长度
 ```html
-  <Form :model="model" :rules="rules" ref="form">
+  <Form :model="model" :rules="validRules" ref="form">
     <FormItem label="长度测试" props="a">
       <input type="text" v-model="model.a">
     </FormItem>
@@ -155,9 +159,11 @@ globalmobile  // 国际号码
       model: {
         a: null
       },
-      rules:{
-        a: {
-          maxLen: 5
+      validRules: {
+        rules:{
+          a: {
+            maxLen: 5
+          }
         }
       }
     }
@@ -167,7 +173,7 @@ globalmobile  // 国际号码
 ```
 #### 示例：最大值
 ```html
-  <Form :model="model" :rules="rules" ref="form">
+  <Form :model="model" :rules="validRules" ref="form">
     <FormItem label="最大值" props="a">
       <input type="text" v-model="model.a">
     </FormItem>
@@ -179,10 +185,12 @@ globalmobile  // 国际号码
       model: {
         a: null
       },
-      rules:{
-        a: {
-          type: 'number',
-          max: 9
+      validRules: {
+        rules:{
+          a: {
+            type: 'number',
+            max: 9
+          }
         }
       }
     }
@@ -195,7 +203,7 @@ globalmobile  // 国际号码
 
 #### 示例1：正则表达式校验
 ```html
-  <Form :model="model" :rules="rules" ref="form">
+  <Form :model="model" :rules="validRules" ref="form">
     <FormItem label="数字" props="a">
       <input type="text" v-model="model.a">
     </FormItem>
@@ -207,13 +215,15 @@ globalmobile  // 国际号码
       model: {
         a: null
       },
-      rules:{
-        a: {
-          valid: {
-            pattern: /^[0-9]+$/,
-            message: '请输入正确的数字格式'
-          },
-          max: 99
+      validRules: {
+        rules:{
+          a: {
+            valid: {
+              pattern: /^[0-9]+$/,
+              message: '请输入正确的数字格式'
+            },
+            max: 99
+          }
         }
       }
     }
@@ -226,7 +236,7 @@ globalmobile  // 国际号码
 
 #### 示例2：使用valid方法进行验证
 ```html
-  <Form :model="model" :rules="rules" ref="form">
+  <Form :model="model" :rules="validRules" ref="form">
     <FormItem label="valid" props="a">
       <input type="text" v-model="model.a">
     </FormItem>
@@ -238,12 +248,14 @@ globalmobile  // 国际号码
       model: {
         a: null
       },
-      rules:{
-        a: {
-          type: 'number',
-          valid(prop, parent, data) {
-            if(prop< 0 || prop > 100) {
-                return '必须介于0至100之间'
+      validRules: {
+        rules:{
+          a: {
+            type: 'number',
+            valid(prop, parent, data) {
+              if(prop< 0 || prop > 100) {
+                  return '必须介于0至100之间'
+              }
             }
           }
         }
@@ -255,7 +267,7 @@ globalmobile  // 国际号码
 ```
 ### 异步validAsync验证
 ```html
-  <Form :model="model" :rules="rules" ref="form">
+  <Form :model="model" :rules="validRules" ref="form">
     <FormItem label="validAsync" props="a">
       <input type="text" v-model="model.a">
     </FormItem>
@@ -267,18 +279,20 @@ globalmobile  // 国际号码
       model: {
         a: null
       },
-      rules:{
-        a: {
-          type: 'number',
-          validAsync(prop, next, parent , data){
-            $.ajax('/test').then((resp)){
-              if(resp.isExsit){
-                next("已存在");
+      validRules: {
+        rules:{
+          a: {
+            type: 'number',
+            validAsync(prop, next, parent , data){
+              $.ajax('/test').then((resp)){
+                if(resp.isExsit){
+                  next("已存在");
+                }
+                if(resp.value < 0 || resp.value > 100) {
+                  next('必须介于0至100之间')
+                }
+                next()
               }
-              if(resp.value < 0 || resp.value > 100) {
-                next('必须介于0至100之间')
-              }
-              next()
             }
           }
         }
@@ -294,7 +308,7 @@ globalmobile  // 国际号码
 
 #### 示例1
 ```html
-  <Form :model="model" :rules="rules" ref="form">
+  <Form :model="model" :rules="validRules" ref="form">
     <FormItem label="数据b" props="b">
       <input type="text" v-model="model.b">
     </FormItem>
@@ -310,16 +324,18 @@ globalmobile  // 国际号码
         b: null,
         c: null
       },
-      combineRules:[{
-        // parentRef: 'e[]', // 如果验证的是子级的数据，则需要定义父级
-        refs: ['b', 'c'],
-        valid(valueb,valuec){
-          if(valueb > valuec){
-            return "b不能大于c";
+      validRules: {
+        combineRules:[{
+          // parentRef: 'e[]', // 如果验证的是子级的数据，则需要定义父级
+          refs: ['b', 'c'],
+          valid(valueb,valuec){
+            if(valueb > valuec){
+              return "b不能大于c";
+            }
+            return true;
           }
-          return true;
-        }
-      }]
+        }]
+      }
     }
   }
   // 合并验证，这里需要注意的是默认会报错在最后一个数据，也就是会在页面上对应数据的地方报错提醒
@@ -333,16 +349,18 @@ globalmobile  // 国际号码
         b: null,
         c: null
       },
-      combineRules:[{
-        parentRef: 'e[]', // 如果验证的是子级的数据，则需要定义父级
-        refs: ['b', 'c'],
-        valid(valueb,valuec){
-          if(valueb > valuec){
-            return "b不能大于c";
+      validRules: {
+        combineRules:[{
+          parentRef: 'e[]', // 如果验证的是子级的数据，则需要定义父级
+          refs: ['b', 'c'],
+          valid(valueb,valuec){
+            if(valueb > valuec){
+              return "b不能大于c";
+            }
+            return true;
           }
-          return true;
-        }
-      }]
+        }]
+      }
     }
   }
   // 合并验证，这里需要注意的是默认会报错在最后一个数据，也就是会在页面上对应数据的地方报错提醒
