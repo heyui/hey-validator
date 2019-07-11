@@ -256,6 +256,7 @@ globalmobile  // 国际号码
               if(prop< 0 || prop > 100) {
                   return '必须介于0至100之间'
               }
+              return true;
             }
           }
         }
