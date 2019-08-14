@@ -30,16 +30,16 @@ npm install --save hey-validator
 ### 基础示例
 ```html
   <Form :model="model" :rules="validRules" ref="form">
-    <FormItem label="金额" props="amount">
+    <FormItem label="金额" prop="amount">
       <input type="text" v-model="model.amount">
     </FormItem>
-    <FormItem label="网址" props="url">
+    <FormItem label="网址" prop="url">
       <input type="text" v-model="model.url">
     </FormItem>
-    <FormItem label="邮箱" props="email">
+    <FormItem label="邮箱" prop="email">
       <input type="text" v-model="model.email">
     </FormItem>
-    <FormItem label="手机" props="mobile">
+    <FormItem label="手机" prop="mobile">
       <input type="text" v-model="model.mobile">
     </FormItem>
   </Form>
@@ -83,7 +83,7 @@ globalmobile  // 国际号码
 #### 示例1
 ```html
   <Form :model="model" :rules="validRules" ref="form">
-    <FormItem label="金额" props="amount">
+    <FormItem label="金额" prop="amount">
       <input type="text" v-model="model.amount">
     </FormItem>
   </Form>
@@ -110,7 +110,7 @@ globalmobile  // 国际号码
 #### 示例2
 ```html
   <Form :model="model" :rules="validRules" ref="form">
-    <FormItem label="金额" props="mobile">
+    <FormItem label="金额" prop="mobile">
       <input type="text" v-model="model.mobile">
     </FormItem>
   </Form>
@@ -148,7 +148,7 @@ globalmobile  // 国际号码
 #### 示例：最大长度
 ```html
   <Form :model="model" :rules="validRules" ref="form">
-    <FormItem label="长度测试" props="a">
+    <FormItem label="长度测试" prop="a">
       <input type="text" v-model="model.a">
     </FormItem>
   </Form>
@@ -174,7 +174,7 @@ globalmobile  // 国际号码
 #### 示例：最大值
 ```html
   <Form :model="model" :rules="validRules" ref="form">
-    <FormItem label="最大值" props="a">
+    <FormItem label="最大值" prop="a">
       <input type="text" v-model="model.a">
     </FormItem>
   </Form>
@@ -204,7 +204,7 @@ globalmobile  // 国际号码
 #### 示例1：正则表达式校验
 ```html
   <Form :model="model" :rules="validRules" ref="form">
-    <FormItem label="数字" props="a">
+    <FormItem label="数字" prop="a">
       <input type="text" v-model="model.a">
     </FormItem>
   </Form>
@@ -237,7 +237,7 @@ globalmobile  // 国际号码
 #### 示例2：使用valid方法进行验证
 ```html
   <Form :model="model" :rules="validRules" ref="form">
-    <FormItem label="valid" props="a">
+    <FormItem label="valid" prop="a">
       <input type="text" v-model="model.a">
     </FormItem>
   </Form>
@@ -269,7 +269,7 @@ globalmobile  // 国际号码
 ### 异步validAsync验证
 ```html
   <Form :model="model" :rules="validRules" ref="form">
-    <FormItem label="validAsync" props="a">
+    <FormItem label="validAsync" prop="a">
       <input type="text" v-model="model.a">
     </FormItem>
   </Form>
@@ -310,10 +310,10 @@ globalmobile  // 国际号码
 #### 示例1
 ```html
   <Form :model="model" :rules="validRules" ref="form">
-    <FormItem label="数据b" props="b">
+    <FormItem label="数据b" prop="b">
       <input type="text" v-model="model.b">
     </FormItem>
-    <FormItem label="数据c" props="c">
+    <FormItem label="数据c" prop="c">
       <input type="text" v-model="model.c">
     </FormItem>
   </Form>
